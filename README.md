@@ -1,0 +1,50 @@
+# 因子流动性回测：中文报告与 LaTeX bundle
+
+本仓库整理了已经完成的合成数据验证和公司真实分钟样本回放，提供可直接阅读的中文 PDF、可编辑 LaTeX 源码、六组重新设计的图表，以及可离线重绘的汇总数据和脚本。
+
+**先读 [完整中文报告](tex_bundle/report.pdf)**，或下载 [完整 TeX bundle](dist/factor_liquidity_tex_bundle.zip)。GitHub 上可打开 PDF；若预览未加载，下载到本地阅读即可。报告共 15 页，按“已完成工作—统一模型—合成压力实验—真实结果—结论—下一步”展开。
+
+## 报告解释了什么
+
+合成样本验证了目标权重、订单、共享成交额度、现金预算、部分成交、跨日余单、费用和净值的闭环。10% 参与率下，资金从 100 万增至 1 亿元，合成净收益从 8.9443% 降至 6.0142%，参考金额完成率从 100% 降至 69.0932%。这些结果说明模型约束确实改变了执行和持仓，不能当作因子真实收益证据。
+
+真实样本来自实际公司 1 分钟行情，覆盖预先固定的 12 只股票、46 个交易日。10% 参与率下，区间净收益约为 −2.48% 至 −2.40%。真实全口径金额完成率约 88.6%，但余单全部在样本末日收盘才生成，没有下一交易日可执行；拥有完整观察窗口的母单均完成。平均自然时间约 66 小时主要包含周末等待，大资金低参与率的执行时间尾部仍明显变长。
+
+报告逐图解释这些口径，并用一笔跨三个交易日完成的订单说明余单如何延续。它不宣布因子长期有效或无效，不设置尚未确定的业务收益门槛，也不把最高资金档当作真实容量。
+
+![合成资金阶梯](tex_bundle/figures/01_synthetic.png)
+
+![真实执行时间诊断](tex_bundle/figures/05_real_clock.png)
+
+## 文件怎样看
+
+| 文件或目录 | 用途 |
+| --- | --- |
+| [tex_bundle/report.pdf](tex_bundle/report.pdf) | 已编译的中文报告 |
+| [tex_bundle/main.tex](tex_bundle/main.tex) | 正文、表格、图注及指标定义 |
+| [tex_bundle/README.md](tex_bundle/README.md) | 编译、重绘、重新提取数据的具体步骤 |
+| [tex_bundle/figures](tex_bundle/figures) | 六组嵌入中文字形的矢量 PDF 与高清 PNG |
+| [tex_bundle/data](tex_bundle/data) | 报告使用的汇总数据及统计口径 |
+| [tex_bundle/scripts/make_figures.py](tex_bundle/scripts/make_figures.py) | 修改图表风格并离线重绘 |
+| [tex_bundle/scripts/prepare_data.py](tex_bundle/scripts/prepare_data.py) | 从本地既有回测输出提取图表汇总数据 |
+| [dist/factor_liquidity_tex_bundle.zip](dist/factor_liquidity_tex_bundle.zip) | 包含报告、源码、图表、数据和脚本的完整包 |
+
+## 快速使用
+
+已有 TeX Live / MacTeX（含 ctex、Fandol、latexmk、LuaLaTeX）时：
+
+```bash
+git clone https://github.com/lsnnnnnnnn/factor_liquidity.git
+cd factor_liquidity/tex_bundle
+make pdf
+```
+
+修改 `main.tex` 后再次执行 `make pdf` 即可。现成图表已附在仓库里，仅编译报告不需要 Python 或数据库。Overleaf 也可上传 ZIP 内 `tex_bundle` 的内容，选择 **LuaLaTeX**，主文件设为 `main.tex`。本次使用 LuaLaTeX 验证了中文显示、文本提取与搜索所需的 Unicode 映射。
+
+若需要重绘图表，详见 [bundle 使用说明](tex_bundle/README.md)。重绘读取附带 CSV，不重新运行策略；完整回测仍使用已有本地引擎仓库、授权数据和配置。公开仓库不包含公司原始分钟记录、完整逐笔账户账本、连接地址或凭据。
+
+## 验证与后续研究
+
+当前引擎分支全量测试重新运行，**163 项通过**；手算案例重新执行并通过账本审计。合成、真实各 25 个情景，50 份审计全部通过，分别产生 76,004 和 3,173 笔成交。报告图表全部从已有数值提取，未为了曲线美观改变种子、证券池或参数。
+
+下一步按顺序补齐历史状态、交易规则、官方收盘及公司行动；为末日订单追加完整执行观察窗口；再增加真实业务因子、同池基准、IC/分组收益和跨时期样本。业务收益、完成率及延迟标准确定后，才讨论条件性容量。当前数据属于市场事件时间的探索回放，不是严格历史版本 PIT；价格冲击模型仍为 `none`。
