@@ -1,6 +1,6 @@
 # 中文 LaTeX bundle 使用说明
 
-本目录可以独立复制或解压使用。`report.pdf` 是已编译报告；`main.tex` 是完整正文。六张图各附一份矢量 PDF 和 220 dpi PNG，PDF 在报告中保持矢量线条和中文形状。正文使用 TeX 自带 Fandol 字体，避免依赖某台电脑的中文字体。
+本目录可以独立复制或解压使用。`report.pdf` 是已编译报告；`main.tex` 是完整正文。报告按“简短结论—因子与配置—指标—合成数据及结果—真实数据及结果—下一步”组织，去掉封面、编号章节与装饰模板；运行命令放在这份说明中，不占用实验正文。六张图各附一份矢量 PDF 和 220 dpi PNG。正文使用 TeX 自带 Fandol 字体。
 
 ## 只阅读或修改正文
 
@@ -70,9 +70,20 @@ make pdf
 
 ## 完整回测和指标口径
 
-本仓库是报告交付物，完整策略执行仍在已有 `factor-liquidity` 引擎仓库中运行。报告第 13 节给出原引擎的测试、手算、合成与公司回放命令。回测输出包括：`summary.csv`、`orders.csv`、`fills.csv`、`children.csv`、`events.csv`、`positions.csv`、`nav.csv`、`daily_nav.csv` 和 `audit.json`。
+本仓库是报告交付物，完整策略执行仍在已有 `factor-liquidity` 引擎仓库中运行。进入已经安装依赖的引擎目录，可运行：
 
-统计定义见 [data/README.md](data/README.md) 和报告末节。现金均值同时列出分钟记录与日终两种口径，正文和图 02 使用分钟记录口径。完成时间只在完成母单上统计，必须同时查看未完成和截断订单。金额完成率采用下单参考价，不是实际成交现金额的比值。
+```bash
+PYTHONPATH=src .venv/bin/python -m pytest -q
+PYTHONPATH=src .venv/bin/python -m factor_liquidity.handcalc
+PYTHONPATH=src .venv/bin/python -m factor_liquidity.demo \
+  --config configs/demo.yaml --output outputs/my-demo
+PYTHONPATH=src .venv/bin/python -m factor_liquidity.company \
+  --config configs/company.example.yaml --output outputs/my-company-replay
+```
+
+公司入口要求本地已有授权导出的行情文件及配置。每次使用新的输出目录。回测输出包括：`summary.csv`、`orders.csv`、`fills.csv`、`children.csv`、`events.csv`、`positions.csv`、`nav.csv`、`daily_nav.csv` 和 `audit.json`。
+
+统计定义放在报告前部，也可查阅 [data/README.md](data/README.md)。现金均值同时列出分钟记录与日终两种口径，正文和图 02 使用分钟记录口径。完成时间只在已完成订单上统计，尚未完成的订单另外说明。订单金额完成比例采用下单参考价，不是实际成交现金额的比值。
 
 本次真实回放的市场事件时间、D+1 可得和可修订历史表，不能等同严格 PIT。历史状态、规则、官方收盘和公司行动仍未完整验收；最低收益、最低完成率和最长延迟参数保持未设置。附带的数据和报告不提供资金容量结论。
 
