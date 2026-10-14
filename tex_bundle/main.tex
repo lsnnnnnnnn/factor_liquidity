@@ -1,14 +1,25 @@
 \documentclass[UTF8,fontset=fandol,11pt,a4paper]{ctexart}
-\usepackage[top=22mm,bottom=22mm,left=22mm,right=22mm]{geometry}
-\usepackage{amsmath,booktabs,tabularx,array,graphicx,caption,float,setspace,hyperref}
+\usepackage[top=20mm,bottom=20mm,left=22mm,right=22mm]{geometry}
+\usepackage{amsmath,booktabs,tabularx,array,graphicx,caption,float,setspace,hyperref,placeins,needspace}
 \hypersetup{hidelinks,pdftitle={因子回测实验结果},pdfauthor={factor-liquidity}}
-\setstretch{1.16}
-\setlength{\parskip}{0.45em}
+\setstretch{1.12}
+\setlength{\parskip}{0.25em}
 \setlength{\parindent}{2em}
-\captionsetup{font=small,labelfont=bf,labelsep=quad,skip=6pt}
+\captionsetup{font=small,labelfont=bf,labelsep=quad,skip=4pt}
+\setlength{\textfloatsep}{9pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.72}
+\setcounter{topnumber}{2}
+\clubpenalty=10000
+\widowpenalty=10000
+\raggedbottom
 \pagestyle{plain}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
-\newcommand{\reportfigure}[3]{\begin{figure}[H]\centering\includegraphics[width=\linewidth]{figures/#1.pdf}\caption{#2}\label{#3}\end{figure}}
+\newcommand{\reportfigure}[3]{\begin{figure}[!htbp]\centering\includegraphics[width=\linewidth]{figures/#1.pdf}\caption{#2}\label{#3}\end{figure}}
 \begin{document}
 
 \noindent\textbf{结论}
@@ -109,7 +120,8 @@
 
 合并多笔订单时，金额较大的订单占更大权重，避免小订单和大订单被视为同样大小的需求。完成时间只在已经全部成交的订单上计算，未完成订单另外说明。后文的“90\% 分位”表示 90\% 的已完成订单所需时间不超过该数值。它与平均值、最长时间一起描述订单需要等多久。
 
-\newpage
+\FloatBarrier
+\Needspace{4\baselineskip}
 \noindent\textbf{合成数据实验}
 
 观察资金扩大后，成交量限制会怎样影响这套规则。程序生成 30 只模拟股票、80 个模拟交易日，每只股票每天有 48 个 5 分钟行情区间，共 115,200 条记录。日期为 2025 年 1 月 2 日至 4 月 23 日，使用模拟工作日日历。所有资金和参与率实验使用同一批数据。
@@ -125,6 +137,8 @@
 
 把 1 亿元的参与率从 5\% 提高到 20\%，订单金额完成比例由 61.17\% 提高到 77.06\%。在本次合成数据中，允许参与更多市场成交量，确实能在相同执行期中完成更多计划买卖。但买卖时点变了，之后的价格也在变化，收益不一定随参与率逐步提高。
 
+\FloatBarrier
+\Needspace{4\baselineskip}
 \medskip
 \noindent\textbf{真实数据实验}
 
@@ -163,17 +177,9 @@
 
 这说明，成交快慢会改变实际持仓过程和投资结果。在本次 1 亿元组，提高参与率缩短了成交等待，却没有提高期末净收益。因此，评价参与率需要同时看投资收益和成交时间。下面继续看这些账户是否完成了买卖，以及等待了多久。
 
-\textbf{订单金额完成比例约为 88.6\%，原因是最后一批订单没有后续交易日，而不是已有执行机会的订单买卖不完。}
+\textbf{未成交部分都是样本最后一天的新订单。}\texttt{eg. 1 亿元、10\% 参与率下，共有 64 笔订单：53 笔在三个交易日内全部成交；另 11 笔在 9 月 4 日收盘后下单，应从下一交易日开始买卖，但本次行情数据只到 9 月 4 日。按下单参考金额计算，前 53 笔占全部需求的 88.62\%，后 11 笔占 11.38\%。}其他实验也是同样的情况：有完整执行期的订单均已成交，未成交的都是末日新单，没有后续行情来观察它们的买卖。
 
-图 \ref{fig:completion} 把全部订单与有完整执行期的订单分开。以 1 亿元、10\% 参与率为例，一共生成 64 笔订单，其中 53 笔已经开始执行，并且都在三个交易日的上限内全部成交。剩余 11 笔在 9 月 4 日 15:00 才下单，数据也在这个时刻结束，所以尚未开始买卖。按参考金额计，这 11 笔占全部需求约 11.38\%。
-
-\reportfigure{04_real_completion}{真实数据：全体订单中约 88.6\% 的参考金额已成交；拥有完整执行期的订单全部成交。未成交部分均为最后一天收盘才下的订单。}{fig:completion}
-
-100 万元、10\% 参与率也有相同情况：53 笔订单中，44 笔完成，9 笔最后一天收盘新下单、尚未开始执行。所有 25 组真实实验都符合这一情况，有完整执行期的订单全部完成。
-
-因此，本次真实数据支持的执行结论是：\textbf{已经观察到完整执行过程的买卖，能够在三个交易日内完成。}最后一批订单的完成情况没有观察到，应保留为“尚未开始”，既不把它们算作已成交，也不把它们归因于成交量不足。
-
-\textbf{虽然已有执行期的订单都能完成，大资金、低参与率下仍有部分订单需要等待更久。}
+\textbf{资金越大、参与率越低，部分订单所需的交易时间越长。}
 
 \reportfigure{05_real_clock}{真实数据：资金增大后，完成买卖平均需要的交易分钟增加。1 亿元账户中，大多数订单较快完成，但少数订单明显更慢。}{fig:clock}
 
@@ -192,23 +198,13 @@
 \caption{1 亿元账户的 53 笔已完成订单；三种参与率分别统计}
 \end{table}
 
-三种参与率的中位数都为 2 分钟，表示至少一半订单在两个交易分钟以内完成。但在 5\% 参与率下，最长一笔用了 492 个交易分钟，平均值也被这些较慢的订单拉高。提高到 20\% 后，最长一笔缩短到 52 分钟。这说明资金扩大以后，执行压力会先集中在部分较难完成的订单上；只看最终是否完成，还看不出它们等了多久。
+三种参与率下，至少一半订单在 2 个交易分钟内完成，差别主要在较慢的订单上：5\% 参与率下，最长一笔用了 492 个交易分钟；20\% 参与率下缩短到 52 分钟。这里的交易分钟不计休市和午休。\texttt{eg. 每批调仓都在周五收盘下单，到周一 09:30 才开始买卖，中间的 66.5 小时不计入交易分钟。}
 
-原来的汇总还记录了“从下单到完成”的时钟时间，平均约为 66 至 68 小时。本次调仓决定都在周五 15:00 作出，最早周一 09:30 才能开始买卖；仅这段周末等待就有 66.5 小时。因此，这个数字不表示市场连续交易了 66 小时。图和表使用剔除休市、午休及本次禁成交时段后的交易分钟，直接比较开始执行后需要多久。
-
-\textbf{一笔约 995 万元的买单，进一步说明了参与率怎样改变完成时间。}
-
-1 亿元账户在 7 月 31 日收盘后，计划买入 000069.SZ 共 5,653,400 股。决策参考价为 1.76 元，计划参考金额为 9,949,984 元，约 995 万元；该参考价用于确定需求金额，之后成交仍按各分钟的 VWAP 计算。三种参与率下，这笔初始需求相同，均从 8 月 3 日 09:30 开始执行。
+\textbf{同一笔买单的完成时间也不同。}\texttt{eg. 1 亿元账户在 7 月 31 日收盘后，计划买入 000069.SZ 共 5,653,400 股，按参考价 1.76 元计算约为 995 万元。三种参与率下，这笔需求相同，都从 8 月 3 日 09:30 开始执行。}
 
 \reportfigure{06_order_timeline}{同一笔买单：5\% 参与率分三个交易日完成；10\% 与 20\% 参与率均在第一天完成。}{fig:order}
 
-5\% 参与率下，8 月 3 日买到 3,003,500 股；8 月 4 日继续买到 2,413,200 股；8 月 5 日再买到剩余的 236,700 股，于 09:48 全部完成。三日合计正好是原计划的 5,653,400 股。10\% 参与率下，第一天 14:46 就完成；20\% 参与率下，第一天 10:22 完成。
-
-这个结果说明，\textbf{同一个持仓目标可以最终实现，但实现速度不同。}参与率较低时，一笔较大买单要用更多行情区间才能买完，账户也会更晚达到目标持仓。5\% 参与率已经用到了窗口第三天；本次它按期完成了，仍然值得在更大资金或其他行情区间继续观察所需时间。
-
-\begin{samepage}
-把真实实验的结果合在一起看，可以得到一个清楚的判断：这套规则在该区间内能完成有完整执行窗口的调仓，但持仓投资结果为负；提高参与率主要缩短了部分大订单的完成时间，没有在本区间同时带来更高收益。这些分别是投资结果和执行结果，不能只用一个最终收益数字代替两个问题的答案。
-\par\end{samepage}
+5\% 参与率下，8 月 3 日、4 日、5 日分别买入 3,003,500 股、2,413,200 股、236,700 股，到第三天 09:48 全部完成。10\% 和 20\% 参与率下，则分别在第一天 14:46 和 10:22 完成。三组最终都买到了目标数量，但参与率越低，账户达到目标持仓越晚。
 
 
 \end{document}

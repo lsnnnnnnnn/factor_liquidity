@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the six report figures offline from the included aggregate CSV files."""
+"""Render the five report figures offline from the included aggregate CSV files."""
 from __future__ import annotations
 
 import argparse
@@ -58,8 +58,8 @@ def setup(font: Path | None) -> None:
 
 
 def panels(widths=(1, 1)):
-    fig, axes = plt.subplots(1, 2, figsize=(6.5, 3.12), gridspec_kw={"width_ratios": widths})
-    fig.subplots_adjust(left=.105, right=.985, bottom=.21, top=.83, wspace=.37)
+    fig, axes = plt.subplots(1, 2, figsize=(6.5, 2.72), gridspec_kw={"width_ratios": widths})
+    fig.subplots_adjust(left=.105, right=.985, bottom=.255, top=.83, wspace=.37)
     for ax in axes:
         ax.set_axisbelow(True)
         ax.grid(axis="y")
@@ -176,39 +176,6 @@ def returns_figure(data, output):
     save(fig, output, "03_real_returns")
 
 
-def completion_figure(data, output):
-    diagnostics = pd.read_csv(data / "real_diagnostics.csv")
-    chosen = diagnostics[diagnostics.group.eq("constrained_net") & diagnostics.participation_rate.eq(.1)].sort_values("initial_capital")
-    fig, (left, right) = panels((1.4, 1))
-    subtitle(left, "A  已开始执行的订单均完成")
-    x = np.arange(5)
-    left.bar(x - .16, chosen.all_amount_completion * 100, width=.29, color=AMBER, label="全部订单")
-    left.bar(x + .16, chosen.mature_amount_completion * 100, width=.29, color=TEAL, label="拥有完整执行窗口")
-    for position, value in zip(x, chosen.all_amount_completion * 100):
-        left.text(position - .16, value + 1.4, f"{value:.1f}", ha="center", fontsize=7.5, color=AMBER)
-    left.set_ylim(0, 111)
-    left.yaxis.set_major_locator(MultipleLocator(25))
-    left.set_ylabel("订单金额完成比例（%）")
-    capital_axis(left)
-    subtitle(right, "B  期末 11 笔订单尚未开始")
-    completed_share = chosen.iloc[-1].all_amount_completion * 100
-    censored_share = chosen.iloc[-1].censored_amount_share * 100
-    right.barh([0], [completed_share], color=TEAL, height=.27)
-    right.barh([0], [censored_share], left=[completed_share], color=AMBER, height=.27)
-    right.text(45, .0, f"已成交 {completed_share:.2f}%", ha="center", va="center", color="white", fontsize=8)
-    right.annotate(f"尚未开始 {censored_share:.2f}%", (94, .13), xytext=(.45, .8), textcoords="axes fraction", ha="center", fontsize=8, color=AMBER, arrowprops={"arrowstyle": "-", "color": AMBER, "lw": .7})
-    right.text(.05, .34, "09/04 收盘后下单\n数据在同日结束\n11 笔订单尚未开始", transform=right.transAxes, fontsize=8, color=MUTED, linespacing=1.6, va="top")
-    right.set_xlim(0, 100)
-    right.set_ylim(-.65, .6)
-    right.set_yticks([])
-    right.set_xticks([0, 50, 100])
-    right.set_xlabel("下单参考金额占比（%）", labelpad=8)
-    right.grid(False)
-    fig.legend(*left.get_legend_handles_labels(), loc="upper left", bbox_to_anchor=(.10, 1.01), ncol=2, columnspacing=2)
-    fig.text(.105, .035, "参与率 10%；全部订单包含最后一天新下单、尚无执行机会的需求。", color=MUTED, fontsize=8)
-    save(fig, output, "04_real_completion")
-
-
 def clock_figure(data, output):
     diagnostics = pd.read_csv(data / "real_diagnostics.csv")
     fig, (left, right) = panels()
@@ -238,7 +205,7 @@ def clock_figure(data, output):
     right.set_xlim(-.35, 2.55)
     right.set_xlabel("参与率", labelpad=8)
     right.set_ylabel("成交用时（交易分钟，对数刻度）")
-    right.text(.03, .98, "圆点 中位数 · 方点 90%分位\n三角 最长用时", transform=right.transAxes, fontsize=7, color=MUTED, va="top", linespacing=1.4)
+    right.text(.03, .98, "圆点 中位数 · 方点90% · 三角 最长", transform=right.transAxes, fontsize=6.8, color=MUTED, va="top")
     fig.legend(*left.get_legend_handles_labels(), loc="upper left", bbox_to_anchor=(.10, 1.01), ncol=3, columnspacing=2)
     fig.text(.105, .055, "交易分钟不计周末、夜间、午休和不可执行的收盘竞价。", color=MUTED, fontsize=7.6)
     fig.text(.105, .018, "90%分位表示：90%的已完成订单不超过该用时。", color=MUTED, fontsize=7.6)
@@ -247,8 +214,8 @@ def clock_figure(data, output):
 
 def timeline_figure(data, output):
     frame = pd.read_csv(data / "order_example_cumulative.csv")
-    fig, ax = plt.subplots(figsize=(6.5, 3.12))
-    fig.subplots_adjust(left=.10, right=.98, bottom=.24, top=.83)
+    fig, ax = plt.subplots(figsize=(6.5, 2.72))
+    fig.subplots_adjust(left=.10, right=.98, bottom=.28, top=.83)
     ax.set_axisbelow(True)
     ax.grid(axis="y", color=GRID, lw=.6)
     ax.tick_params(length=0, pad=5)
@@ -287,9 +254,9 @@ def main():
     args = parser.parse_args()
     setup(args.font)
     args.output.mkdir(parents=True, exist_ok=True)
-    for function in [synthetic_figure, nav_figure, returns_figure, completion_figure, clock_figure, timeline_figure]:
+    for function in [synthetic_figure, nav_figure, returns_figure, clock_figure, timeline_figure]:
         function(args.data, args.output)
-    print("Rendered 6 figures as vector PDF and 220 dpi PNG.")
+    print("Rendered 5 figures as vector PDF and 220 dpi PNG.")
 
 
 if __name__ == "__main__":
