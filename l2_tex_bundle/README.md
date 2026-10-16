@@ -1,52 +1,51 @@
-# L2 中文 LaTeX bundle
+# 周频独立券单的 L2 中文 LaTeX bundle
 
-`report.pdf` 是实际编译的中文报告；`main.tex` 是可编辑正文，`results.tex` 由公开汇总表生成。`main` 只维护本版 L2 实验；旧版分钟 VWAP 报告及扩展实验完整保存在 [`v1` 分支](https://github.com/lsnnnnnnnn/factor_liquidity/tree/v1)。本目录可独立复制和离线重画，不连接数据库。
+`main.tex` 是可编辑中文正文，`results.tex` 由实际派生表生成，`report.pdf` 是交付报告。`main` 维护扩样研究；两股 L2 小样在 [`v2`](https://github.com/lsnnnnnnnn/factor_liquidity/tree/v2)，旧分钟实验在 [`v1`](https://github.com/lsnnnnnnnn/factor_liquidity/tree/v1)。
 
-## 编译、重画、打包
-
-本次沿用已有 Python、Matplotlib、Fandol、LuaLaTeX 和 latexmk；没有安装新的文档框架。
+## 编译、重画与打包
 
 ```bash
-make pdf                     # 只编译现有正文和矢量图
-make figures                 # 用 data/ 重画 PDF + 240 dpi PNG，并更新 results.tex
+make pdf                     # 只编译已有正文和矢量图
+make figures                 # 由 data/ 重画 PDF/240 dpi PNG，更新 results.tex
 make all                     # 重画并编译
 make bundle                  # 生成 ../dist/factor_liquidity_l2_tex_bundle.zip
 ```
 
-例如复用已有引擎环境：`make all PYTHON=/path/to/engine/.venv/bin/python`。
-
-需让 `latexmk`、`lualatex`、`kpsewhich` 在 PATH；macOS 的现有 TeX 位于 `/Library/TeX/texbin`。`PYTHON` 可指向已有引擎虚拟环境，或使用安装了 `requirements.txt` 所列库的 Python。编译缓存都留在 `build/`，ZIP 排除缓存、日志和临时预览。Overleaf 的主文件为 `main.tex`，编译器选择 **LuaLaTeX**。
+使用已有 Python、Matplotlib、Fandol、LuaLaTeX 与 latexmk，不依赖数据库或新文档框架。例如复用引擎环境：`make all PYTHON=/path/to/engine/.venv/bin/python`。`latexmk`、`lualatex`、`kpsewhich` 须在 PATH；macOS 现有 TeX 位于 `/Library/TeX/texbin`。也可为重画脚本显式传入中文字体：
 
 ```bash
 python scripts/make_figures.py --font /path/to/chinese-font.otf
 ```
 
-公开 CSV、图和 `results.tex` 使用同一组数值。重画脚本检查三个时点完成率单调、需求数量守恒和未完成用时为空；数值改变后须同步重新编译报告。五张图依次为逐档手算、完成率矩阵、逐单用时与滑点、净值与收益差、余单原因与工程敏感性。没有把两单小样画成平滑的总体分布。
+编译缓存保存在 `build/`，ZIP 排除缓存、日志和临时预览。Overleaf 主文件为 `main.tex`，编译器选 **LuaLaTeX**。修改 CSV 后须重新生成图、`results.tex` 和 PDF，不能只改正文数字。
 
-## 真实实验复现
+## 研究语义与图源核对
 
-完整 L2 执行器在引擎仓库的 `main` 分支，授权样本和逐笔账户在本地引擎交付中；本轮数值对应整理前代码提交 `8b9bb63`。公共 bundle 只提供足够重画的精简派生数据；没有原始公司 L2、服务器配置、凭据或完整账户账本。
+每个周频事件从共同基线独立初始化：约 50% 下半动量池等权持仓，其余现金；固定卖出原持仓，买入上半池等权 100% 目标。同事件、同资金跨模型冻结股数和初始账户，普通余单当日终止，使用当日官方收盘估值。动量采用前 21 个官方交易日的未复权收盘；只有有停牌证据的缺日才沿用前收盘并留标记。参考与初始估值来自当日 09:30 前 L2 `pre_close`，有证据停牌且无行情时用此前最近官方收盘并标陈旧价。
 
-在已经具有授权样本的引擎目录运行：
+各事件不是连续策略账户，不串联、复利或累计其收益。股票重复、日期相近，描述性分位数也不意味着所有母单或事件统计独立。计划 14 次事件的数据覆盖表保留零行记录，无停牌证据的整日未知缺失不能写成零流动性。
+
+五张图分别展示资金/参与率下三个观察时点、日期与买卖稳定性、预热流动性层和方向、已完成用时与成交滑点、独立事件收益差及未完约束。重画入口核对每事件/情景唯一、数量守恒、时点完成率单调、完整需求分母、未完成时间空值，以及母单与场景参考金额一致；`scenario` 在日期之间重复，因此所有核对使用 `event_date + scenario`。
+
+## 授权本地样本的实际运行
+
+完整 L2 执行器、原始样本及带逐日收盘价的信号预热表留在授权引擎交付，公开 bundle 只含足够复算图表的派生数据，公开预热表只保留日期与填补证据。使用自己的新输出目录，避免覆盖历史实验：
 
 ```bash
 PYTHONPATH=src MPLCONFIGDIR=.cache/matplotlib .venv/bin/python -m pytest -q
-PYTHONPATH=src .venv/bin/python scripts/validate_l2_sample.py \
-  --sample data/company_l2_20261016 --output outputs/my-l2-quality
-PYTHONPATH=src MPLCONFIGDIR=.cache/matplotlib .venv/bin/python -m factor_liquidity.l2_study \
-  --data data/company_l2_20261016 --daily data/company_l2_20261016/daily.csv \
-  --validation outputs/my-l2-quality \
-  --output outputs/my-l2-study
+PYTHONPATH=src .venv/bin/python scripts/validate_l2_expanded.py \
+  --sample data/company_l2_expanded_20261016 --output outputs/my-l2-expanded-quality
+PYTHONPATH=src .venv/bin/python -m factor_liquidity.l2_expanded \
+  --data data/company_l2_expanded_20261016 \
+  --validation outputs/my-l2-expanded-quality --output outputs/my-l2-expanded-study
 ```
 
-每次使用新的输出目录，避免覆盖历史结果。研究入口同时运行可控买卖手算、25 组主矩阵和 3 组敏感性；主实验使用资金充足模式，保留卖出持仓限制、手续费和融资负债。固定20日动量只用两只事先确定的股票调试接口，没有搜索新因子。原参考价来自前一日官方收盘，09-30 盘前按日线归档规则读取。
+主实验排除现金不足阻塞，融资缺口列负债，工程利率 0；不取消持仓与可卖量约束。每一来源快照的前一区间量只能预占一次，子单加正延迟后用严格更晚盘口执行。100 股和单子单 100 万股上限为演示参数，延迟与深度刷新为工程假设，未认证全市场历史规则或真实补单。
 
-本次权威结果为本地 `outputs/l2-study-verified-20261016/`，共 28 组、56 笔冻结母单、84 个日终净值点；28 份账户核对通过。实际 L2 逐档成交共 23,644 笔，原参考对照另有 10 笔，可控手算另有 4 笔。公开数据的每个时点完成率、目标数量和收益差均独立对本地源产物复算通过。整理后的 L2 引擎通过 58 项测试（45 项执行器、2 项导出、11 项传输检查）；旧分钟手算与固定种子合成回归的代码和历史验证记录随旧版保留在 `v1`。
+正式因子接口和指定 2024 压力回补未接入本研究；收益、完成率和延迟门槛保持未设置。原始 L2、完整账户、服务器地址、连接配置及凭据不纳入公开 bundle，也不做哈希或校验和检查。
 
-1 亿元、10% 额度参与率在 30/60 分钟/当日的参考金额完成率为 12.1052%/19.4081%/34.0589%，期末净收益 +0.3838798%，原参考 +0.5264218%，差 -0.1425420 个百分点。买单只完成 216,500/19,880,700 股，卖单 4,405,200 股全部完成；正收益不意味着目标持仓完成。普通余量 09-30 当日终止，随后两天只估值。
+## 本次实际交付核验
 
-正式公司因子未提供授权文件夹及输入合同，尚未连接。指定两股在 2024-01-01 至 2024-09-24（不含后者）的实际查询均为 0 行，未完成该压力回放。容量收益、完成率与延迟门槛均未设置。
+最终数据为 13 个事件、364 个场景、10,920 行母单，所有账户核对通过；72 项引擎测试通过。桌面另选 08-31、100 万元、5 模型复跑，41 张账户与执行表逐项相等。缺日线停牌股的估值来源标记已改为陈旧参考价，未改变任何财务内容，详情保存在 `study_metadata.json`。
 
-## PDF 检查
-
-报告以 LuaLaTeX 实际编译。交付前用 Poppler 渲染每页，检查中文、表格、图注、分页和留白，并将图源与表格逐项核对。渲染页面是本地检查中间文件，不纳入 ZIP。指标详见 [data/README.md](data/README.md)。
+5 页中文报告以 LuaLaTeX 实际编译，并用 Poppler 逐页渲染检查中文、表格、图注、分页及留白。正文结果、五张图与 CSV 同源；ZIP 中的文件与交付目录逐项直接比对。

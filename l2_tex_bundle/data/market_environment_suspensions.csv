@@ -1,0 +1,2 @@
+instrument,trade_date,known_at,suspended,evidence,source,pit_quality,recorded_at,source_updated_at
+000635.SZ,2026-08-31,2026-08-31 09:30:00,True,authorized suspend_state_daily_market_pit.csv; market_open_state_proxy,tushare,market_open_state_proxy,2026-08-31 21:00:26,2026-08-31 21:00:26

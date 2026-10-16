@@ -1,56 +1,127 @@
 {
-  "signal": "21 official closes / 20-session momentum, two predetermined names, top1",
-  "signal_date": "2026-09-29",
+  "kind": "independently initialized one-day execution stress episodes; never compound returns",
+  "universe": "fixed 30 Shenzhen 000xxx names selected on March 2026 prior liquidity; not a certified all-market historical universe",
+  "signal": "raw close[last]/close[first]-1 on previous 21 official sessions; unadjusted debugging signal, corporate actions can affect ranks",
+  "warmup_missing": "carry previous observed close only for positive authorized suspension evidence, all imputations retained",
+  "episode_initialization": "50% bottom-half equal reference-notional existing sellable inventory + residual cash; target top-half 100%; freeze rounded shares across all models",
+  "reference_price": "latest valid preopen L2 pre_close strictly before 09:30; evidenced suspension without preopen quotes uses prior observed official close flagged stale",
+  "corporate_actions": "episodes initialize at current-day pre_close, no overnight entitlement or account carry; not a corporate-action-complete strategy backtest",
+  "missing_eod_mark": "only evidenced suspended names may use unchanged episode initial mark; demand never removed",
+  "period": [
+    "2026-07-01",
+    "2026-09-30"
+  ],
+  "planned_dates": [
+    "2026-07-01",
+    "2026-07-06",
+    "2026-07-13",
+    "2026-07-20",
+    "2026-07-27",
+    "2026-08-03",
+    "2026-08-10",
+    "2026-08-17",
+    "2026-08-24",
+    "2026-08-31",
+    "2026-09-07",
+    "2026-09-14",
+    "2026-09-21",
+    "2026-09-28"
+  ],
   "dates": [
-    "2026-09-30",
-    "2026-10-08",
-    "2026-10-09"
+    "2026-07-06",
+    "2026-07-13",
+    "2026-07-20",
+    "2026-07-27",
+    "2026-08-03",
+    "2026-08-10",
+    "2026-08-17",
+    "2026-08-24",
+    "2026-08-31",
+    "2026-09-07",
+    "2026-09-14",
+    "2026-09-21",
+    "2026-09-28"
   ],
+  "planned_episode_count": 14,
+  "episode_count": 13,
+  "requested_stock_dates": 420,
   "symbols": [
-    "000001.SZ",
-    "000529.SZ"
+    "000027.SZ",
+    "000034.SZ",
+    "000048.SZ",
+    "000166.SZ",
+    "000401.SZ",
+    "000523.SZ",
+    "000529.SZ",
+    "000530.SZ",
+    "000550.SZ",
+    "000564.SZ",
+    "000566.SZ",
+    "000591.SZ",
+    "000595.SZ",
+    "000607.SZ",
+    "000635.SZ",
+    "000681.SZ",
+    "000691.SZ",
+    "000809.SZ",
+    "000819.SZ",
+    "000820.SZ",
+    "000899.SZ",
+    "000928.SZ",
+    "000936.SZ",
+    "000952.SZ",
+    "000963.SZ",
+    "000966.SZ",
+    "000970.SZ",
+    "000977.SZ",
+    "000980.SZ",
+    "000988.SZ"
   ],
+  "data_unavailable_dates": [
+    "2026-07-01"
+  ],
+  "missing_data_policy": "exclude entire planned episode if any fixed-pool name lacks L2 and has no suspension evidence; never count missing observations as zero market liquidity",
+  "unique_stock_date_opportunities": 390,
+  "scenario_count": 364,
+  "scenario_order_rows": 10920,
+  "zero_quantity_rows": 0,
   "fees": {
     "buy_rate": 0.0003,
     "sell_rate": 0.0008,
     "minimum": 5.0,
     "minimum_unit": "parent_session"
   },
-  "selection": "initial 50% bottom-rank stock + cash; target 100% top-rank stock; freeze shares across execution models",
-  "reference_price_source": "signal-date official daily close",
-  "funding": "sufficient",
+  "capitals": [
+    1000000,
+    3000000,
+    10000000,
+    30000000,
+    100000000
+  ],
+  "participation_rates": [
+    0.05,
+    0.1,
+    0.2
+  ],
+  "latency": "1ms main engineering assumption; unmeasured",
+  "sensitivity": "max capital on every episode: snapshot refresh, 3s and 10s propagation",
+  "refresh": "conservative per day/per price cumulative simulated consumption subtracted from observed depth",
+  "funding": "sufficient; actual holdings and sellable constraints retained",
   "financing_interest": 0.0,
-  "diagnostic_weights": "mean_slippage_bps: filled reference notional; cross/latency/spread: executed notional with valid two-sided source/execution quotes, coverage separately recorded; not additive attribution",
-  "latency": "1ms engineering value, unmeasured",
   "lot_size": 100,
   "max_child_quantity": 1000000,
-  "quantity_rule_status": "demonstration parameters, not certified historical exchange rules",
-  "refresh": "conservative: subtract all prior simulated consumption at each price from current displayed size, reset daily; full snapshot refresh sensitivity",
+  "quantity_rules": "engineering demonstration, not historically certified",
+  "daily_archive": "D+1 archive source, no versioned production PIT guarantee",
+  "no_own_impact_identification": true,
+  "market_environment": "positive historical suspension evidence blocks stale-book fills, retained separately with original known_at/recorded_at even when learned after the session; never used to alter signals or demand; not a contemporaneously known strategy input",
   "capacity_thresholds": {
     "return": null,
     "completion": null,
     "delay": null
   },
-  "formal_factor": "not connected: authorized folder and contract not supplied",
-  "historical_2024": [
-    {
-      "code": "000001.SZ",
-      "start_date": "2024-01-01",
-      "end_date_exclusive": "2024-09-24",
-      "rows": 0
-    },
-    {
-      "code": "000529.SZ",
-      "start_date": "2024-01-01",
-      "end_date_exclusive": "2024-09-24",
-      "rows": 0
-    }
-  ],
-  "no_own_impact_identification": true,
-  "scores": {
-    "000001.SZ": -0.03156996587030725,
-    "000529.SZ": -0.005928853754940566
-  },
+  "formal_factor": "not connected: authorized factor-folder contract not provided",
+  "sample_unit": "13 correlated market episodes and 390 stock-date opportunities before scenario/capital repetitions; descriptive quantiles, no independence claim",
+  "all_audits_passed": true,
   "handcalc_audit": {
     "passed": true,
     "ledger_rows": 2,
@@ -63,32 +134,16 @@
       "000001.SZ": 500.0
     }
   },
-  "signal_warmup_official_sessions": [
-    "2026-08-31",
-    "2026-09-01",
-    "2026-09-02",
-    "2026-09-03",
-    "2026-09-04",
-    "2026-09-07",
-    "2026-09-08",
-    "2026-09-09",
-    "2026-09-10",
-    "2026-09-11",
-    "2026-09-14",
-    "2026-09-15",
-    "2026-09-16",
-    "2026-09-17",
-    "2026-09-18",
-    "2026-09-21",
-    "2026-09-22",
-    "2026-09-23",
-    "2026-09-24",
-    "2026-09-28",
-    "2026-09-29"
-  ],
-  "supplier_user_confirmation": "华鑫每日行情压缩包日更；四个区间/累计量额字段齐备；用户确认覆盖2025-02-17至2026-10-15，非本轮全区间逐日验收",
-  "dictionary_version": "d4f6b3c6668c16c02edb201b0ddbf383ac741807 (latest main checked 2026-10-16)",
-  "validation_tests": 58,
-  "financial_path_comparison": "all 28 scenarios fills, account ledger, daily NAV and full summary equal preceding final run exactly; only phase/constraint diagnostics changed",
-  "validation_tests_scope": "clean L2 main: 45 execution + 2 export + 11 transport checks, 2026-10-16"
+  "execution_batches": 6,
+  "metric_weights": {
+    "completion": "all frozen target shares times reference price, including unfilled demand",
+    "slippage": "filled shares times reference price; no fills means missing slippage",
+    "quote_diagnostics": "executed notional on valid source and execution books; coverage reported separately; non-additive descriptive ratios",
+    "episode_distribution": "one EOD observation per independently initialized date; descriptive quantiles, no compounding or independence inference"
+  },
+  "provenance_label_correction": "23 Aug31 L2 valuation-mark records for suspended 000635 at 15:00 were relabelled from official_close to stale_evidenced_suspension_mark; decoded CSV content otherwise exactly unchanged. Current code emits the corrected label directly.",
+  "desktop_replay_validation": "Aug31, 1m capital, 5 models: all 41 serialized account/execution tables exactly equal to the corresponding full-study baseline, including corrected stale-mark provenance.",
+  "test_suite": "72 passed; includes causal source/depth/account checks, export trust boundaries and retrospective closing-state evidence.",
+  "engine_commit": "91a5a92fb0d93fb8de3e21e06b2b0fd057dd12b6",
+  "engine_repository": "http://172.16.10.26/lishengen/factor-liquidity"
 }
