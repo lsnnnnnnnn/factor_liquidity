@@ -1,0 +1,9 @@
+{
+  "source_type": "company_bar_1m_file",
+  "signal_cutoff_date": "2026-09-29",
+  "evaluation_end": "2026-10-09 15:00:00+08:00",
+  "sample_rows": 1056837,
+  "instruments": 30,
+  "trading_clock": "calendar continuous intervals; company 14:58--15:00 right-label auction excluded; missing/status/zero-volume intervals included",
+  "export_scope": "Aggregated NAV and anonymous execution observations for figures; no original quote or full account ledger."
+}

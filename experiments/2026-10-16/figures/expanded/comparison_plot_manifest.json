@@ -1,0 +1,36 @@
+{
+  "source_files": [
+    "comparison_summary.csv",
+    "nav_comparison.csv",
+    "order_observations.csv",
+    "study_manifest.json"
+  ],
+  "source_type": "company_bar_1m_file",
+  "signal_cutoff_date": "2026-09-29",
+  "evaluation_end": "2026-10-09 15:00:00+08:00",
+  "maximum_capital": 100000000.0,
+  "nav_participation_rate": 0.1,
+  "completion_clock_counts_at_maximum_capital": {
+    "0.05": {
+      "complete_window_orders": 370,
+      "completed_orders": 297
+    },
+    "0.1": {
+      "complete_window_orders": 359,
+      "completed_orders": 323
+    },
+    "0.2": {
+      "complete_window_orders": 356,
+      "completed_orders": 328
+    }
+  },
+  "completion_clock_population": "complete execution window observed and remaining_quantity <= 1e-9; incomplete orders excluded from time statistics, not assigned zero",
+  "artifacts": [
+    "comparison_01_nav.pdf",
+    "comparison_01_nav.png",
+    "comparison_02_returns.pdf",
+    "comparison_02_returns.png",
+    "comparison_03_execution.pdf",
+    "comparison_03_execution.png"
+  ]
+}

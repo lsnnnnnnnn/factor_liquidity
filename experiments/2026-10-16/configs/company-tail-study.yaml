@@ -1,0 +1,42 @@
+mode: company_exploratory
+seed: 42
+bar_frequency: 1min
+initial_capital_grid:
+- 1000000
+- 3000000
+- 10000000
+- 30000000
+- 100000000
+participation_rate_grid:
+- 0.05
+- 0.1
+- 0.2
+max_execution_sessions: 3
+rebalance_every_sessions: 5
+example_factor: momentum_20_sessions
+top_n: 10
+annualization_days: 252
+minimum_required_annual_return: null
+minimum_fill_ratio: null
+maximum_execution_delay: null
+impact_model: none
+cash_buffer: 0.005
+fees:
+  buy_rate: 0.0003
+  sell_rate: 0.0008
+  minimum: 5.0
+  minimum_unit: child_session
+model_rules:
+  lot_size: 100
+  sell_lag_sessions: 1
+data:
+  table: stock_kdata.bar_1m
+  path: data/company_tail_20260703_20260909/minute/bar_1m.csv
+  export_receipt_path: data/company_tail_20260703_20260909/minute/export_receipt.json
+  calendar_path: configs/szse_2026_calendar.csv
+  daily_path: data/company_tail_20260703_20260909/daily/bar_daily.csv
+  auxiliary_dir: data/company_auxiliary_tail_20261016
+  use_official_daily_close: true
+study:
+  signal_cutoff_date: '2026-09-04'
+cash_dividend_tax_mode: gross_not_withheld
