@@ -95,7 +95,7 @@ def date_axis(ax, dates):
     if indexes[-1] != len(dates)-1:
         indexes.append(len(dates)-1)
     ax.set_xticks(indexes, [date[5:] for date in np.asarray(dates)[indexes]], rotation=35, ha="right")
-    ax.set_xlabel("独立执行事件日", labelpad=5)
+    ax.set_xlabel("调仓日期", labelpad=5)
 
 
 def completion(summary, output):
@@ -106,15 +106,15 @@ def completion(summary, output):
     for ax, field, title in zip(axes, ["completion_30", "completion_60", "completion_day"], ["A  30 个交易分钟", "B  60 个交易分钟", "C  当日结束"]):
         for rate, color in COLORS.items():
             values = [weighted(selected(rows, capital, rate), field, selected(rows, capital, rate).target_reference_notional) * 100 for capital in capitals]
-            ax.plot(range(len(capitals)), values, marker="o", color=color, label=f"额度参与率 {rate:.0%}")
+            ax.plot(range(len(capitals)), values, marker="o", color=color, label=f"参与率 {rate:.0%}")
         ax.set_title(title, loc="left", pad=10)
         ax.set_xticks(range(len(capitals)), [f"{capital/1e4:,.0f}" for capital in capitals])
-        ax.set_xlabel("资金（万元；类别等距）", labelpad=7)
+        ax.set_xlabel("资金（万元）", labelpad=7)
         ax.set_ylim(-3, 104)
         ax.set_yticks([0,25,50,75,100])
-    axes[0].set_ylabel("目标参考金额加权完成率（%）")
+    axes[0].set_ylabel("完成率（按计划金额，%）")
     fig.legend(*axes[0].get_legend_handles_labels(), loc="upper center", bbox_to_anchor=(.53,1.015), ncol=3)
-    save(fig, output, "01_completion", "先加总已成交参考金额与全部需求；跨事件汇总不删除未成交，不计算复合收益。")
+    save(fig, output, "01_completion", "完成率按全部计划金额计算；买卖金额相加，未成交部分仍计入原计划。")
 
 
 def event_stability(summary, orders, output):
@@ -122,10 +122,10 @@ def event_stability(summary, orders, output):
     rows = selected(summary, capital, .1).sort_values("event_date")
     dates = rows.event_date.tolist()
     fig, (left, right) = panels(height=2.75)
-    left.set_title("A  1 亿元、10%：逐事件完成率", loc="left", pad=10)
+    left.set_title("A  1 亿元、10%：各日完成情况", loc="left", pad=10)
     for field, label, color in zip(["completion_30", "completion_60", "completion_day"], ["30 分钟", "60 分钟", "当日"], [AMBER, TEAL, NAVY]):
         left.plot(range(len(rows)), rows[field]*100, marker="o", color=color, label=label)
-    right.set_title("B  当日完成率：买卖分别计算", loc="left", pad=10)
+    right.set_title("B  当日结束时，买卖各完成多少", loc="left", pad=10)
     source = selected(orders, capital, .1)
     for side, label, color in [("buy", "买入", TEAL), ("sell", "卖出", AMBER)]:
         values = []
@@ -136,18 +136,18 @@ def event_stability(summary, orders, output):
     for ax in [left,right]:
         date_axis(ax, dates)
         ax.set_ylim(-3,104)
-        ax.set_ylabel("金额完成率（%）")
+        ax.set_ylabel("完成率（按计划金额，%）")
         ax.legend(fontsize=7, loc="best")
-    save(fig, output, "02_event_stability", "各点从共同基线独立初始化；日期相近、股票重复，因此不声称事件或订单彼此独立。")
+    save(fig, output, "02_event_stability", "每个日期重新设定持仓和现金；连线只方便比较日期，不表示持仓连续变化。")
 
 
 def side_stratum(summary, orders, output):
     rows = selected(orders, summary.capital.max(), .1)
     strata = sorted(rows.stratum.unique(), key=lambda value: {"low": 0, "middle": 1, "mid": 1, "medium": 1, "high": 2}.get(str(value), 3))
     names = {"low": "低", "middle": "中", "mid": "中", "medium": "中", "high": "高"}
-    fig, (left,right) = panels(height=2.7)
-    left.set_title("A  预热流动性层 × 买卖：当日完成",loc="left",pad=10)
-    right.set_title("B  全池买卖：三个观察时点",loc="left",pad=10)
+    fig, (left,right) = panels(height=2.4)
+    left.set_title("A  按股票成交活跃程度分组",loc="left",pad=10)
+    right.set_title("B  买入和卖出各完成多少",loc="left",pad=10)
     for side, label, color, shift in [("buy", "买入", TEAL, -.18),("sell", "卖出", AMBER, .18)]:
         values=[]
         for stratum in strata:
@@ -158,20 +158,20 @@ def side_stratum(summary, orders, output):
         values=[weighted(group,field,demand(group))*100 for field in ["completion_30m","completion_60m","completion_eod"]]
         right.bar(np.arange(3)+shift,values,width=.32,color=color,label=label)
     left.set_xticks(range(len(strata)),[names.get(str(value),str(value)) for value in strata])
-    left.set_xlabel("3 月预热成交额层（研究前冻结）",labelpad=7)
+    left.set_xlabel("成交活跃程度（按 3 月成交额分组）",labelpad=7)
     right.set_xticks(range(3),["30 分钟","60 分钟","当日"])
     for ax in [left,right]:
         ax.set_ylim(0,105)
-        ax.set_ylabel("金额完成率（%）")
-        ax.legend(fontsize=7,loc="best")
-    save(fig,output,"03_side_stratum","1 亿元、10% 额度；各层与各方向使用自身完整需求分母，未成交量均保留。")
+        ax.set_ylabel("完成率（按计划金额，%）")
+    fig.legend(*left.get_legend_handles_labels(),loc="upper center",bbox_to_anchor=(.53,1.015),ncol=2)
+    save(fig,output,"03_side_stratum","1 亿元、10% 参与率；每组分别按原计划金额计算，未成交部分不删除。")
 
 
 def duration_slippage(summary, orders, output):
     rows=selected(orders,summary.capital.max())
-    fig,(left,right)=panels(height=2.7)
-    left.set_title("A  已完成母单：用时经验分布",loc="left",pad=10)
-    right.set_title("B  有实际成交的母单：滑点分布",loc="left",pad=10)
+    fig,(left,right)=panels(height=2.4)
+    left.set_title("A  已做完的订单花了多长时间",loc="left",pad=10)
+    right.set_title("B  成交价比参考价差多少",loc="left",pad=10)
     ticks=[]
     for index,(rate,color) in enumerate(COLORS.items()):
         group=rows.loc[rows.participation.eq(rate)]
@@ -187,38 +187,38 @@ def duration_slippage(summary, orders, output):
             artists["boxes"][0].set(facecolor=color,alpha=.45)
         ticks.append(f"{rate:.0%}\n成交 {len(slip)} 单")
     left.set_xlabel("完成用时（交易分钟）",labelpad=7)
-    left.set_ylabel("在已完成母单中的累计占比（%）")
+    left.set_ylabel("已完成订单的累计占比（%）")
     left.set_xlim(0,240)
     left.set_ylim(0,104)
     left.legend(fontsize=6.6,loc="lower right")
     right.set_xticks(range(len(COLORS)),ticks)
     right.set_ylabel("滑点（bp；正值不利）")
     right.axhline(0,color=MUTED,lw=.7)
-    save(fig,output,"04_duration_slippage","用时未完成留空；箱体为四分位数、中线为中位数、点为尾部，未成交需求不虚设价格。")
+    save(fig,output,"04_duration_slippage","未完成订单另计笔数；箱内为中间一半订单，中线为中位数，小点为较极端的结果。")
 
 
 def returns_constraints(summary, orders, output):
     rows=selected(summary,summary.capital.max())
     fig,(left,right)=panels(height=2.9)
     fig.subplots_adjust(wspace=.8)
-    left.set_title("A  各事件相对原参考的收益差",loc="left",pad=10)
+    left.set_title("A  各日收益与参考结果的差别",loc="left",pad=10)
     for index,(rate,color) in enumerate(COLORS.items()):
         values=rows.loc[rows.participation.eq(rate)].sort_values("event_date").return_diff_pp.to_numpy()
         left.scatter(index+np.linspace(-.1,.1,len(values)),values,color=color,s=14,alpha=.8)
         left.plot([index-.15,index+.15],[np.median(values)]*2,color=INK,lw=1.5)
     left.set_xticks(range(len(COLORS)),[f"{rate:.0%}" for rate in COLORS])
-    left.set_xlabel("前一区间额度参与率",labelpad=7)
+    left.set_xlabel("参与率",labelpad=7)
     left.set_ylabel("当日收益差（百分点）")
     left.axhline(0,color=MUTED,lw=.7)
-    right.set_title("B  未完成母单：累计约束记录",loc="left",pad=10)
+    right.set_title("B  未完成订单遇到的限制",loc="left",pad=10)
     counts=Counter()
-    groups={"participation_budget_bound":"额度上限", "rounded_participation_budget_zero":"额度取整为零",
-        "source_unexplained_gap":"未知长间隔/跨界", "arrival_gap_or_session_boundary":"未知长间隔/跨界",
-        "partial_visible_depth":"可见深度", "no_opposing_depth":"可见深度", "demo_lot_residual":"数量单位余量",
-        "max_child_quantity_bound":"子单上限", "sellable_constraint":"可卖量", "suspended":"停牌证据",
+    groups={"participation_budget_bound":"参与率限制", "rounded_participation_budget_zero":"取整后不足100股",
+        "source_unexplained_gap":"行情间隔或时段切换", "arrival_gap_or_session_boundary":"行情间隔或时段切换",
+        "partial_visible_depth":"盘口数量不足", "no_opposing_depth":"盘口数量不足", "demo_lot_residual":"剩余不足100股",
+        "max_child_quantity_bound":"单次下单数量上限", "sellable_constraint":"可卖数量不足", "suspended":"有停牌记录",
         "retrospective_market_suspension":"停牌环境", "evidenced_suspension":"停牌证据",
         "source_volume_acc_mismatch":"区间量额核对", "source_turnover_acc_mismatch":"区间量额核对",
-        "source_invalid_interval_volume":"区间量无效", "source_budget_reserved_by_other_order":"额度已预占",
+        "source_invalid_interval_volume":"区间成交量无效", "source_budget_reserved_by_other_order":"数量已被其他订单占用",
         "evidenced_locked_no_opposing_depth":"封板无对手盘", "opposing_order_deferred":"反向单等待"}
     skipped={"source_outside_continuous","source_session_boundary","source_day_reset","source_no_preceding_snapshot"}
     source=selected(orders,summary.capital.max(),.1)
@@ -234,11 +234,11 @@ def returns_constraints(summary, orders, output):
         right.set_xlim(0,max(value for _,value in ordered)*1.18)
         right.ticklabel_format(axis="x",style="sci",scilimits=(4,4))
     else:
-        right.text(.5,.5,"无未完成约束记录",transform=right.transAxes,ha="center")
-    right.set_xlabel("1 亿元、10%：记录次数（非互斥）",labelpad=7)
+        right.text(.5,.5,"没有未完成订单的限制记录",transform=right.transAxes,ha="center")
+    right.set_xlabel("1 亿元、10%：遇到该限制的次数",labelpad=7)
     right.grid(False)
     right.grid(axis="x")
-    save(fig,output,"05_returns_constraints","左图每点为一个独立事件，黑线为中位数；右图同一步可多因，记录次数不分摊全部余股。")
+    save(fig,output,"05_returns_constraints","左图每点为一个调仓日，黑线为中位数；右图同一次尝试可能同时受多种限制。")
 
 
 def write_results(summary, orders, quality, coverage, metadata, root):
@@ -253,53 +253,59 @@ def write_results(summary, orders, quality, coverage, metadata, root):
     side_rates={side: weighted(source.loc[source.side.eq(side)],"completion_eod",demand(source.loc[source.side.eq(side)]))*100 for side in ["buy","sell"]}
     event_count=base.event_date.nunique()
     values={"EpisodeCount":str(event_count),"PrimaryScenarioCount":str(len(base)),"DefaultDelay":f"{big.delay_ms.iloc[0]:g}","DefaultRefresh":"保守扣减"}
-    values["StudyConclusion"]=(f"实际完成 {event_count} 个可用事件、30 股的固定券单回放。10\\% 额度参与率下，100 万元组当日金额完成率为 {percent(small,'completion_day'):.2f}\\%；1 亿元组 30/60 分钟及当日分别为 {percent(big,'completion_30'):.2f}\\%、{percent(big,'completion_60'):.2f}\\%、{percent(big,'completion_day'):.2f}\\%。1 亿元组买单与卖单当日分别完成 {side_rates['buy']:.2f}\\% 和 {side_rates['sell']:.2f}\\%，仍有 {incomplete:,} 笔母单未完成。相对同事件原参考执行，独立当日收益差中位数为 {big.return_diff_pp.median():+.4f} 个百分点；这不是三个月累计收益。")
+    values["StudyConclusion"]=(
+        "\\begin{itemize}"
+        f"\\item 资金越大，按计划完成买卖越困难。参与率为 10\\% 时，资金从 100 万元增至 1 亿元，当日完成率从 {percent(small,'completion_day'):.2f}\\% 降至 {percent(big,'completion_day'):.2f}\\%；1 亿元在前 30、60 分钟只完成 {percent(big,'completion_30'):.2f}\\%、{percent(big,'completion_60'):.2f}\\%。"
+        f"\\item 大资金下，买入比卖出更难做完。1 亿元、10\\% 参与率下，当日买入完成 {side_rates['buy']:.2f}\\%，卖出完成 {side_rates['sell']:.2f}\\%；{event_count} 个调仓日合计仍有 {incomplete:,} 笔订单没有全部完成。"
+        f"\\item 成交限制会改变当天收益。与全部按参考价成交相比，1 亿元、10\\% 参与率下，{event_count} 个当日收益差的中位数为 {big.return_diff_pp.median():+.4f} 个百分点。"
+        "\\end{itemize}")
     actual_rows=int(quality.rows.sum())
     missing=coverage.loc[coverage.rows.eq(0)]
     excluded=sorted(set(coverage.date)-set(base.event_date))
-    values["QualityNarrative"]=(f"计划 14 个执行日、420 个股票日；实际研究保留 {event_count} 个执行日。样本共 {actual_rows:,} 条真实十档快照，其中连续竞价 {int(quality.continuous_rows.sum()):,} 条、有效额度来源 {int(quality.valid_source_rows.sum()):,} 条。覆盖表保留 {len(missing)} 个零行股票日；排除事件为 {tex('、'.join(excluded))}，没有把未知数据空缺记成零流动性。区间量额有 {int(quality.volume_mismatches.sum()):,} 条差异，原行保留且不补量；连续竞价内超过 10 秒的间隔共 {int(quality.continuous_gaps_gt10s.sum()):,} 次，最长 {quality.continuous_max_gap_seconds.max():g} 秒。")
+    values["QualityNarrative"]=(f"原计划 14 个调仓日，每天 30 只股票，共应有 420 份单只股票的日行情。实际保留 {event_count} 天，共 {actual_rows:,} 条十档快照，其中连续竞价时段 {int(quality.continuous_rows.sum()):,} 条，能用于计算下单数量的 {int(quality.valid_source_rows.sum()):,} 条。{tex('、'.join(excluded))} 的 {len(missing)} 只股票均无行情，已单独列出并排除。区间成交量和成交额共发现 {int(quality.volume_mismatches.sum()):,} 条核对差异；连续竞价内，快照相隔超过 10 秒的情况有 {int(quality.continuous_gaps_gt10s.sum()):,} 次，最长 {quality.continuous_max_gap_seconds.max():g} 秒。")
     official=quality.loc[quality.rows.gt(0)&quality.daily_volume.notna()]
     amount_micro=official.loc[official.daily_amount_delta.abs().gt(.02)]
     assert official.daily_volume_delta.abs().le(1e-6).all(), "日终数量差异需要明确披露"
-    daily_text=f"{len(official)} 个有官方日线的非空股票日日终累计量与日线在浮点误差内一致；其中 {len(amount_micro)} 个股票日存在金额微差，最大绝对差 {official.daily_amount_delta.abs().max():.2f} 元，不能表述为金额逐分精确相等。"
+    daily_text=f"能与官方日线核对的 {len(official)} 份日行情，日终累计成交量均在计算误差范围内一致。{len(amount_micro)} 份的成交额有微小差别，最大为 {official.daily_amount_delta.abs().max():.2f} 元。"
     for row in quality.loc[quality.rows.gt(0)&quality.daily_volume.isna()].itertuples():
         assert str(row.historical_suspension_evidence).lower() in {"true","1"}
-        daily_text+=f"{tex(row.symbol)} 在 {row.date[5:]} 有 {int(row.rows):,} 条 L2、无官方日线且有历史停牌证据；该事件估值采用初始参考价并保留标记。"
+        daily_text+=f"{tex(row.symbol)} 在 {row.date[5:]} 有 {int(row.rows):,} 条快照，但没有官方日线，并查到当天停牌记录；因此用最初的参考价估值，另外标明价格没有更新，买入计划仍计入完成率。"
     assert quality.invalid_book_rows.fillna(0).eq(0).all()
     assert quality.continuous_crossed_book_rows.fillna(0).eq(0).all()
     assert quality[["ask_saturated_rows","bid_saturated_rows"]].fillna(0).eq(0).all().all()
-    values["DailyQualityNarrative"]=daily_text+"盘口逆序、连续竞价交叉盘和饱和值均未发现。"
+    values["DailyQualityNarrative"]=daily_text+"没有发现买卖档位顺序错误、连续竞价买价高于卖价，或数量达到字段上限的记录。"
     reference=base.loc[base.capital.eq(capital)&base.model.eq("reference")]
     unlimited=base.loc[base.capital.eq(capital)&base.model.eq("unlimited")]
-    triple=lambda group: "/".join(f"{percent(group,field):.2f}\\%" for field in ["completion_30","completion_60","completion_day"])
-    values["CompletionNarrative"]=(f"1 亿元组的 30/60 分钟及当日金额完成率：原参考反事实为 {triple(reference)}，L2 不限参与率为 {triple(unlimited)}，L2 10\\% 为 {triple(big)}。参考对照假定全部需求按参考价成交，不能作为停牌股的可实现保证。10\\% 的逐事件当日完成率范围为 {big.completion_day.min()*100:.2f}\\% 至 {big.completion_day.max()*100:.2f}\\%，中位数 {big.completion_day.median()*100:.2f}\\%；金额加权总体与事件中位数采用不同统计单位。")
+    triple=lambda group: "、".join(f"{percent(group,field):.2f}\\%" for field in ["completion_30","completion_60","completion_day"])
+    values["CompletionNarrative"]=(f"以 1 亿元为例，假设全部按参考价成交，三个时点自然都是 100\\%。换成实际 L2 盘口，即使不限制参与率，30 分钟、60 分钟和当日也只能完成 {triple(unlimited)}；参与率限制为 10\\% 后，降为 {triple(big)}。这说明盘口数量本身已经构成限制，再限制每次下单数量，完成得更慢。分日期看，10\\% 参与率下当日完成率为 {big.completion_day.min()*100:.2f}\\% 至 {big.completion_day.max()*100:.2f}\\%，13 天的中位数为 {big.completion_day.median()*100:.2f}\\%。")
     strata=[]
     for name,group in source.groupby("stratum"):
-        label={"low":"低","medium":"中","middle":"中","mid":"中","high":"高"}.get(str(name),tex(name))
-        strata.append(f"{label}层 {weighted(group,'completion_eod',demand(group))*100:.2f}\\%")
-    values["StratumNarrative"]="1 亿元、10\\% 的各预热层当日金额完成率为："+"，".join(strata)+"。这是一组事先固定股票的描述性比较，不能推出全市场低流动性股票的一般概率。"
+        label={"low":"较少","medium":"一般","middle":"一般","mid":"一般","high":"较活跃"}.get(str(name),tex(name))
+        strata.append(f"成交{label}的一组完成 {weighted(group,'completion_eod',demand(group))*100:.2f}\\%")
+    values["StratumNarrative"]="1 亿元、10\\% 参与率下，"+"，".join(strata)+"。股票按研究前的成交额分组，没有根据这次结果重新挑选。这只反映本次选定股票的差别，不能直接推广到全市场。"
     median=f"{done.median():.2f}" if len(done) else "无可计算样本"
-    values["DurationNarrative"]=(f"1 亿元、10\\% 共 {len(source):,} 笔母单，全部完成 {len(done):,} 笔、未完成 {incomplete:,} 笔；已完成用时中位数为 {median} 个交易分钟。完成用时分布以已完成单为条件，不能单独替代需求完成率。")
-    values["ReturnNarrative"]=(f"1 亿元、10\\% 的各事件净收益中位数为 {big.return_pct.median():+.4f}\\%，相对原参考的收益差范围为 {big.return_diff_pp.min():+.4f} 至 {big.return_diff_pp.max():+.4f} 个百分点。收益差包含成交价格、成交时点、残留持仓与费用；不串联成期间收益。收益差为正也可能来自少买或残留持仓的行情暴露，须结合完成率看，不能据此挑参与率或认定容量更大。")
+    values["DurationNarrative"]=(f"1 亿元、10\\% 参与率下，13 天共 {len(source):,} 笔买卖订单，做完 {len(done):,} 笔，未做完 {incomplete:,} 笔。已经做完的订单，完成用时中位数为 {median} 个交易分钟；也就是其中一半不超过这个时间。未完成订单不参加这个中位数的计算。")
+    values["ReturnNarrative"]=(f"1 亿元、10\\% 参与率下，13 个调仓日的当日净收益中位数为 {big.return_pct.median():+.4f}\\%。与全部按参考价成交相比，各日收益差从 {big.return_diff_pp.min():+.4f} 到 {big.return_diff_pp.max():+.4f} 个百分点不等。实际成交更少，有时反而会少亏一些，因此收益差为正不一定表示交易做得更好，还要看原计划是否完成。这些都是单日比较，不能相加或复利成三个月收益。")
     true=lambda column: column.astype(str).str.lower().isin(["true","1"])
     closing=source.loc[source.remaining_qty.gt(0)&true(source.closing_directional_limit_no_depth)&true(source.closing_quote_fresh)]
     buy_count=int(closing.side.eq("buy").sum())
     sell_count=int(closing.side.eq("sell").sum())
-    values["ClosingNarrative"]=(f"1 亿元、10\\% 的未完成母单中，事后方向限价且无对手盘标记涉及买单 {buy_count} 笔、卖单 {sell_count} 笔。标记要求官方方向限价，且 14:57 前最后连续盘口距收盘观察边界不超过 10 秒、原始对手盘为空；不证明全天封板，不改写已运行的订单生命周期，也未模拟跨事件余单延续。")
+    values["ClosingNarrative"]=(f"1 亿元、10\\% 参与率下，未完成订单中有 {buy_count} 笔买单、{sell_count} 笔卖单，在 14:57 前最后 10 秒内的有效盘口中，已处于相应的官方涨跌停价，且原始盘口没有对手盘。这是事后查看收盘前行情得到的标记，只能说明那个时点的情况，不能证明全天都封板；本次也没有继续模拟这些剩余数量下一周能否成交。")
     sensitivity=summary.loc[summary.capital.eq(capital)&summary.participation.eq(.1)&summary.is_base.eq(0)]
     labels=[]
     for (refresh,delay),group in sensitivity.groupby(["refresh","delay_ms"],sort=False):
-        name="逐快照刷新" if refresh=="snapshot" else "保守扣减"
-        labels.append(f"{name}/{delay:g} 毫秒为 {percent(group,'completion_day'):.2f}\\%")
-    values["SensitivityNarrative"]="1 亿元、10\\% 的工程敏感性中，当日金额完成率："+"，".join(labels)+"。其余输入冻结；延迟参数未经真实测量。"
+        name="每张快照重新计算可见数量" if refresh=="snapshot" else "继续扣除当天已用过的同价位数量"
+        delay_text=f"{delay/1000:g} 秒" if delay>=1000 else f"{delay:g} 毫秒"
+        labels.append(f"{name}、延迟 {delay_text}时，为 {percent(group,'completion_day'):.2f}\\%")
+    values["SensitivityNarrative"]="同样使用 1 亿元、10\\% 参与率和原来的买卖计划，改变两项假设后，当日完成率为："+"；".join(labels)+"。这些延迟都是实验参数，尚未测量真实下单耗时。"
     three_seconds=sensitivity.loc[sensitivity.refresh.eq("conservative")&sensitivity.delay_ms.eq(3000)]
     if len(three_seconds)==len(big):
         paired=big.set_index("event_date").completion_day.to_frame("base").join(
             three_seconds.set_index("event_date").completion_day.rename("three_seconds"),validate="one_to_one")
         if paired.notna().all().all() and (paired.base-paired.three_seconds).abs().max()<=1e-4:
-            values["SensitivityNarrative"]+="1 毫秒与 3 秒的完成率接近；粗快照采样下子单可能落在同一后续盘口，不能据此推断真实交易对 3 秒延迟不敏感。"
+            values["SensitivityNarrative"]+="1 毫秒和 3 秒的结果接近，可能因为行情快照之间本来就隔着数秒，两种延迟最终用到了同一张后续盘口。因此不能据此认定真实交易中慢 3 秒也没关系。"
     test_count=int(metadata["test_suite"].split()[0])
-    values["ValidationNarrative"]=(f"本轮引擎 {test_count} 项测试通过，含市场环境禁成交核验；桌面 5 模型复跑的 41 张账户/执行表与基线逐项相等。{len(summary):,} 个实际事件情景均通过账户核对，公开表保留 {len(orders):,} 行母单指标。重画时复核数量守恒、时点单调、完整需求、未完成时间空值及场景/母单金额一致；日期和资金重复不增加独立样本。")
+    values["ValidationNarrative"]=(f"本轮程序通过 {test_count} 项测试，{len(summary):,} 组运行结果均通过现金、持仓与负债核对。桌面重新运行 5 种成交规则，得到的 41 张结果表与原结果逐项一致。公开数据保留 {len(orders):,} 行订单指标。重画图表时还会核对：计划股数等于已成交加剩余股数，未完成订单不填写完成时间，各图表使用同一份原计划金额。")
     lines=[f"\\newcommand{{\\{key}}}{{{value}}}" for key,value in values.items()]
     lines.append(r"\newcommand{\CapitalRows}{%")
     for value in sorted(base.capital.unique()):
