@@ -1,5 +1,7 @@
 # 精简图源与指标口径
 
+本目录仅属于 `main` 的 L2 新版。旧分钟实验图源在 [`v1/tex_bundle/data`](https://github.com/lsnnnnnnnn/factor_liquidity/tree/v1/tex_bundle/data)，不与本版数据混用。
+
 这里只保存派生统计和可控手算。公司原始 L2、完整逐笔账户、私有配置、连接信息和凭据不进入本目录。除 `handcalc_levels.csv` 的明示可控例，其余结果均来自实际运行，不用合成数字填补真实缺口。
 
 - `summary.csv`：5 档资金的原参考、L2 不限参与率、L2 5%/10%/20% 共 25 个主情景，以及 3 个延迟/刷新敏感性情景。`is_base=1` 为主实验。

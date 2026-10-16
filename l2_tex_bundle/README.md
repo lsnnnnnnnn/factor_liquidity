@@ -1,6 +1,6 @@
 # L2 中文 LaTeX bundle
 
-`report.pdf` 是实际编译的中文报告；`main.tex` 是可编辑正文，`results.tex` 由公开汇总表生成。与旧 `tex_bundle/` 的分钟 VWAP 实验分开保留。本目录可独立复制和离线重画，不连接数据库。
+`report.pdf` 是实际编译的中文报告；`main.tex` 是可编辑正文，`results.tex` 由公开汇总表生成。`main` 只维护本版 L2 实验；旧版分钟 VWAP 报告及扩展实验完整保存在 [`v1` 分支](https://github.com/lsnnnnnnnn/factor_liquidity/tree/v1)。本目录可独立复制和离线重画，不连接数据库。
 
 ## 编译、重画、打包
 
@@ -25,14 +25,12 @@ python scripts/make_figures.py --font /path/to/chinese-font.otf
 
 ## 真实实验复现
 
-完整执行器、授权样本和逐笔账户在本地引擎交付中；本轮代码提交为 `8b9bb63`。公共 bundle 只提供足够重画的精简派生数据；没有原始公司 L2、服务器配置、凭据或完整账户账本。
+完整 L2 执行器在引擎仓库的 `main` 分支，授权样本和逐笔账户在本地引擎交付中；本轮数值对应整理前代码提交 `8b9bb63`。公共 bundle 只提供足够重画的精简派生数据；没有原始公司 L2、服务器配置、凭据或完整账户账本。
 
 在已经具有授权样本的引擎目录运行：
 
 ```bash
 PYTHONPATH=src MPLCONFIGDIR=.cache/matplotlib .venv/bin/python -m pytest -q
-PYTHONPATH=src MPLCONFIGDIR=.cache/matplotlib .venv/bin/python -m factor_liquidity.handcalc \
-  --output outputs/my-minute-handcalc
 PYTHONPATH=src .venv/bin/python scripts/validate_l2_sample.py \
   --sample data/company_l2_20261016 --output outputs/my-l2-quality
 PYTHONPATH=src MPLCONFIGDIR=.cache/matplotlib .venv/bin/python -m factor_liquidity.l2_study \
@@ -43,7 +41,7 @@ PYTHONPATH=src MPLCONFIGDIR=.cache/matplotlib .venv/bin/python -m factor_liquidi
 
 每次使用新的输出目录，避免覆盖历史结果。研究入口同时运行可控买卖手算、25 组主矩阵和 3 组敏感性；主实验使用资金充足模式，保留卖出持仓限制、手续费和融资负债。固定20日动量只用两只事先确定的股票调试接口，没有搜索新因子。原参考价来自前一日官方收盘，09-30 盘前按日线归档规则读取。
 
-本次权威结果为本地 `outputs/l2-study-verified-20261016/`，共 28 组、56 笔冻结母单、84 个日终净值点；28 份账户核对通过。实际 L2 逐档成交共 23,644 笔，原参考对照另有 10 笔，可控手算另有 4 笔。公开数据的每个时点完成率、目标数量和收益差均独立对本地源产物复算通过。全套 356 项测试通过，其中 L2 执行器专项 45 项；旧分钟手算与固定种子合成回归均实际运行通过。
+本次权威结果为本地 `outputs/l2-study-verified-20261016/`，共 28 组、56 笔冻结母单、84 个日终净值点；28 份账户核对通过。实际 L2 逐档成交共 23,644 笔，原参考对照另有 10 笔，可控手算另有 4 笔。公开数据的每个时点完成率、目标数量和收益差均独立对本地源产物复算通过。整理后的 L2 引擎通过 58 项测试（45 项执行器、2 项导出、11 项传输检查）；旧分钟手算与固定种子合成回归的代码和历史验证记录随旧版保留在 `v1`。
 
 1 亿元、10% 额度参与率在 30/60 分钟/当日的参考金额完成率为 12.1052%/19.4081%/34.0589%，期末净收益 +0.3838798%，原参考 +0.5264218%，差 -0.1425420 个百分点。买单只完成 216,500/19,880,700 股，卖单 4,405,200 股全部完成；正收益不意味着目标持仓完成。普通余量 09-30 当日终止，随后两天只估值。
 

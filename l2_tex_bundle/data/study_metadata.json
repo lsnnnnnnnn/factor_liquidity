@@ -88,6 +88,7 @@
   ],
   "supplier_user_confirmation": "华鑫每日行情压缩包日更；四个区间/累计量额字段齐备；用户确认覆盖2025-02-17至2026-10-15，非本轮全区间逐日验收",
   "dictionary_version": "d4f6b3c6668c16c02edb201b0ddbf383ac741807 (latest main checked 2026-10-16)",
-  "validation_tests": 356,
-  "financial_path_comparison": "all 28 scenarios fills, account ledger, daily NAV and full summary equal preceding final run exactly; only phase/constraint diagnostics changed"
+  "validation_tests": 58,
+  "financial_path_comparison": "all 28 scenarios fills, account ledger, daily NAV and full summary equal preceding final run exactly; only phase/constraint diagnostics changed",
+  "validation_tests_scope": "clean L2 main: 45 execution + 2 export + 11 transport checks, 2026-10-16"
 }
