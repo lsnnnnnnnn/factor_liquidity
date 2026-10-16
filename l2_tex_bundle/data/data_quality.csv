@@ -1,0 +1,7 @@
+symbol,date,rows,continuous_rows,volume_mismatches,turnover_mismatches,continuous_volume_mismatches,continuous_turnover_mismatches,first_time,last_time,continuous_gaps_gt10s,continuous_max_gap_seconds,acc_volume_decreases,acc_turnover_decreases,daily_volume_delta,daily_amount_delta,interval_sum_volume_delta,interval_sum_amount_delta,daily_volume,daily_amount,ask_rows_with_zero_price_or_quantity,ask_continuous_zero_rows,ask_invalid_order_rows,ask_saturated_rows,bid_rows_with_zero_price_or_quantity,bid_continuous_zero_rows,bid_invalid_order_rows,bid_saturated_rows,continuous_crossed_book_rows,continuous_locked_book_rows
+000001.SZ,2026-09-30,4907,4737,0,0,0,0,09:15:00.000000000,15:00:00.000000000,0,6.0,0,0,0.0,0.0,0.0,0.0,104535745.0,1205814858.0,74,0,0,0,74,0,0,0,0,0
+000001.SZ,2026-10-08,4922,4740,7,7,7,7,09:15:00.000000000,15:00:00.000000000,0,3.0,0,0,0.0,0.0,-149700.0,-1770003.0,148168594.0,1743402510.0,86,0,0,0,86,0,0,0,0,0
+000001.SZ,2026-10-09,4913,4739,1,1,1,1,09:15:00.000000000,15:00:00.000000000,0,6.0,0,0,0.0,0.0,-1100.0,-12848.0,107810561.0,1259717108.0,78,0,0,0,78,0,0,0,0,0
+000529.SZ,2026-09-30,2512,2385,0,0,0,0,09:15:00.000000000,15:00:00.000000000,311,54.0,0,0,0.0,0.0,0.0,0.0,2702421.0,13602354.0,31,0,0,0,31,0,0,0,0,0
+000529.SZ,2026-10-08,2761,2636,0,0,0,0,09:15:00.000000000,15:00:00.000000000,287,66.0,0,0,0.0,0.0,0.0,0.0,3374701.0,16918085.0,29,0,0,0,29,0,0,0,0,0
+000529.SZ,2026-10-09,2783,2661,0,0,0,0,09:15:00.000000000,15:00:00.000000000,280,48.0,0,0,0.0,0.0,0.0,0.0,3735701.0,18753673.0,26,0,0,0,26,0,0,0,0,0

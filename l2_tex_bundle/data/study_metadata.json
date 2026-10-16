@@ -1,0 +1,93 @@
+{
+  "signal": "21 official closes / 20-session momentum, two predetermined names, top1",
+  "signal_date": "2026-09-29",
+  "dates": [
+    "2026-09-30",
+    "2026-10-08",
+    "2026-10-09"
+  ],
+  "symbols": [
+    "000001.SZ",
+    "000529.SZ"
+  ],
+  "fees": {
+    "buy_rate": 0.0003,
+    "sell_rate": 0.0008,
+    "minimum": 5.0,
+    "minimum_unit": "parent_session"
+  },
+  "selection": "initial 50% bottom-rank stock + cash; target 100% top-rank stock; freeze shares across execution models",
+  "reference_price_source": "signal-date official daily close",
+  "funding": "sufficient",
+  "financing_interest": 0.0,
+  "diagnostic_weights": "mean_slippage_bps: filled reference notional; cross/latency/spread: executed notional with valid two-sided source/execution quotes, coverage separately recorded; not additive attribution",
+  "latency": "1ms engineering value, unmeasured",
+  "lot_size": 100,
+  "max_child_quantity": 1000000,
+  "quantity_rule_status": "demonstration parameters, not certified historical exchange rules",
+  "refresh": "conservative: subtract all prior simulated consumption at each price from current displayed size, reset daily; full snapshot refresh sensitivity",
+  "capacity_thresholds": {
+    "return": null,
+    "completion": null,
+    "delay": null
+  },
+  "formal_factor": "not connected: authorized folder and contract not supplied",
+  "historical_2024": [
+    {
+      "code": "000001.SZ",
+      "start_date": "2024-01-01",
+      "end_date_exclusive": "2024-09-24",
+      "rows": 0
+    },
+    {
+      "code": "000529.SZ",
+      "start_date": "2024-01-01",
+      "end_date_exclusive": "2024-09-24",
+      "rows": 0
+    }
+  ],
+  "no_own_impact_identification": true,
+  "scores": {
+    "000001.SZ": -0.03156996587030725,
+    "000529.SZ": -0.005928853754940566
+  },
+  "handcalc_audit": {
+    "passed": true,
+    "ledger_rows": 2,
+    "level_fills": 4,
+    "children": 2,
+    "final_cash": 990.0,
+    "final_debt": 0.0,
+    "final_positions": {
+      "000002.SZ": 0.0,
+      "000001.SZ": 500.0
+    }
+  },
+  "signal_warmup_official_sessions": [
+    "2026-08-31",
+    "2026-09-01",
+    "2026-09-02",
+    "2026-09-03",
+    "2026-09-04",
+    "2026-09-07",
+    "2026-09-08",
+    "2026-09-09",
+    "2026-09-10",
+    "2026-09-11",
+    "2026-09-14",
+    "2026-09-15",
+    "2026-09-16",
+    "2026-09-17",
+    "2026-09-18",
+    "2026-09-21",
+    "2026-09-22",
+    "2026-09-23",
+    "2026-09-24",
+    "2026-09-28",
+    "2026-09-29"
+  ],
+  "supplier_user_confirmation": "华鑫每日行情压缩包日更；四个区间/累计量额字段齐备；用户确认覆盖2025-02-17至2026-10-15，非本轮全区间逐日验收",
+  "dictionary_version": "d4f6b3c6668c16c02edb201b0ddbf383ac741807 (latest main checked 2026-10-16)",
+  "validation_tests": 356,
+  "financial_path_comparison": "all 28 scenarios fills, account ledger, daily NAV and full summary equal preceding final run exactly; only phase/constraint diagnostics changed"
+}
