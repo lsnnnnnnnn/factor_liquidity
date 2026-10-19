@@ -1,149 +1,71 @@
 {
-  "kind": "independently initialized one-day execution stress episodes; never compound returns",
-  "universe": "fixed 30 Shenzhen 000xxx names selected on March 2026 prior liquidity; not a certified all-market historical universe",
-  "signal": "raw close[last]/close[first]-1 on previous 21 official sessions; unadjusted debugging signal, corporate actions can affect ranks",
-  "warmup_missing": "carry previous observed close only for positive authorized suspension evidence, all imputations retained",
-  "episode_initialization": "50% bottom-half equal reference-notional existing sellable inventory + residual cash; target top-half 100%; freeze rounded shares across all models",
-  "reference_price": "latest valid preopen L2 pre_close strictly before 09:30; evidenced suspension without preopen quotes uses prior observed official close flagged stale",
-  "corporate_actions": "episodes initialize at current-day pre_close, no overnight entitlement or account carry; not a corporate-action-complete strategy backtest",
-  "missing_eod_mark": "only evidenced suspended names may use unchanged episode initial mark; demand never removed",
-  "period": [
-    "2026-07-01",
-    "2026-09-30"
-  ],
-  "planned_dates": [
-    "2026-07-01",
-    "2026-07-06",
-    "2026-07-13",
-    "2026-07-20",
-    "2026-07-27",
+  "kind": "continuous factor target-weight accounts",
+  "start": "2026-07-31",
+  "end": "2026-09-04",
+  "initial_account": "cash only; initialized once per capital and execution model",
+  "sizing": "same causal factor weights; each account sizes from its own current NAV and actual inventory",
+  "debug_factor": "20-session unadjusted price momentum; top 15 equal weights; not an accepted company factor",
+  "ordinary_residual": "expires that day; actual positions, cash, liabilities and entitlements persist",
+  "exceptional_residual": "positive suspension or official directional limit with fresh raw zero opposing depth; cancelled at next rebalance",
+  "financing": "sufficient funding; debt fully recorded; explicitly zero engineering interest",
+  "return_basis": "daily actual net assets divided by the unique initial capital; total return is final/initial-1",
+  "corporate_actions": "point-in-time market-known versions and independently reconciled entitlements; gross cash dividends, no individual tax certification",
+  "missing_data": "unknown gaps stop the continuous run; no excluded middle dates, no zero-liquidity substitution",
+  "historical_data": "archived overwriteable source; not certified production database PIT",
+  "order_count_meaning": "incomplete_eod_orders counts uncompleted tasks on their submission day; incomplete_orders counts final residuals of all historical parents, not live orders at period end",
+  "rebalance_dates": [
     "2026-08-03",
     "2026-08-10",
     "2026-08-17",
     "2026-08-24",
-    "2026-08-31",
-    "2026-09-07",
-    "2026-09-14",
-    "2026-09-21",
-    "2026-09-28"
+    "2026-08-31"
   ],
-  "dates": [
-    "2026-07-06",
-    "2026-07-13",
-    "2026-07-20",
-    "2026-07-27",
-    "2026-08-03",
-    "2026-08-10",
-    "2026-08-17",
-    "2026-08-24",
-    "2026-08-31",
-    "2026-09-07",
-    "2026-09-14",
-    "2026-09-21",
-    "2026-09-28"
-  ],
-  "planned_episode_count": 14,
-  "episode_count": 13,
-  "requested_stock_dates": 420,
-  "symbols": [
-    "000027.SZ",
-    "000034.SZ",
-    "000048.SZ",
-    "000166.SZ",
-    "000401.SZ",
-    "000523.SZ",
-    "000529.SZ",
-    "000530.SZ",
-    "000550.SZ",
-    "000564.SZ",
-    "000566.SZ",
-    "000591.SZ",
-    "000595.SZ",
-    "000607.SZ",
-    "000635.SZ",
-    "000681.SZ",
-    "000691.SZ",
-    "000809.SZ",
-    "000819.SZ",
-    "000820.SZ",
-    "000899.SZ",
-    "000928.SZ",
-    "000936.SZ",
-    "000952.SZ",
-    "000963.SZ",
-    "000966.SZ",
-    "000970.SZ",
-    "000977.SZ",
-    "000980.SZ",
-    "000988.SZ"
-  ],
-  "data_unavailable_dates": [
-    "2026-07-01"
-  ],
-  "missing_data_policy": "exclude entire planned episode if any fixed-pool name lacks L2 and has no suspension evidence; never count missing observations as zero market liquidity",
-  "unique_stock_date_opportunities": 390,
-  "scenario_count": 364,
-  "scenario_order_rows": 10920,
-  "zero_quantity_rows": 0,
-  "fees": {
-    "buy_rate": 0.0003,
-    "sell_rate": 0.0008,
-    "minimum": 5.0,
-    "minimum_unit": "parent_session"
-  },
-  "capitals": [
-    1000000,
-    3000000,
-    10000000,
-    30000000,
-    100000000
-  ],
-  "participation_rates": [
-    0.05,
-    0.1,
-    0.2
-  ],
-  "latency": "1ms main engineering assumption; unmeasured",
-  "sensitivity": "max capital on every episode: snapshot refresh, 3s and 10s propagation",
-  "refresh": "conservative per day/per price cumulative simulated consumption subtracted from observed depth",
-  "funding": "sufficient; actual holdings and sellable constraints retained",
-  "financing_interest": 0.0,
-  "lot_size": 100,
-  "max_child_quantity": 1000000,
-  "quantity_rules": "engineering demonstration, not historically certified",
-  "daily_archive": "D+1 archive source, no versioned production PIT guarantee",
-  "no_own_impact_identification": true,
-  "market_environment": "positive historical suspension evidence blocks stale-book fills, retained separately with original known_at/recorded_at even when learned after the session; never used to alter signals or demand; not a contemporaneously known strategy input",
-  "capacity_thresholds": {
-    "return": null,
-    "completion": null,
-    "delay": null
-  },
-  "formal_factor": "not connected: authorized factor-folder contract not provided",
-  "sample_unit": "13 correlated market episodes and 390 stock-date opportunities before scenario/capital repetitions; descriptive quantiles, no independence claim",
-  "all_audits_passed": true,
-  "handcalc_audit": {
-    "passed": true,
-    "ledger_rows": 2,
-    "level_fills": 4,
-    "children": 2,
-    "final_cash": 990.0,
-    "final_debt": 0.0,
-    "final_positions": {
-      "000002.SZ": 0.0,
-      "000001.SZ": 500.0
+  "stock_count": 30,
+  "raw_stockdays": 154,
+  "raw_snapshot_rows": 666839,
+  "additional_continuation_stockdays": [
+    {
+      "code": "000635.SZ",
+      "date": "2026-09-01",
+      "rows": 3228
+    },
+    {
+      "code": "000820.SZ",
+      "date": "2026-08-04",
+      "rows": 4845
+    },
+    {
+      "code": "000635.SZ",
+      "date": "2026-09-02",
+      "rows": 3814
+    },
+    {
+      "code": "000635.SZ",
+      "date": "2026-09-03",
+      "rows": 4826
     }
+  ],
+  "stale_valuation_stockdays": 2,
+  "corporate_action_coverage_scope": "announcement_window metadata plus complete exports of listed market-visible versions; not certification of every economic event family",
+  "original_requested_window": {
+    "start": "2026-07-01",
+    "end": "2026-09-30"
   },
-  "execution_batches": 6,
-  "metric_weights": {
-    "completion": "all frozen target shares times reference price, including unfilled demand",
-    "slippage": "filled shares times reference price; no fills means missing slippage",
-    "quote_diagnostics": "executed notional on valid source and execution books; coverage reported separately; non-additive descriptive ratios",
-    "episode_distribution": "one EOD observation per independently initialized date; descriptive quantiles, no compounding or independence inference"
-  },
-  "provenance_label_correction": "23 Aug31 L2 valuation-mark records for suspended 000635 at 15:00 were relabelled from official_close to stale_evidenced_suspension_mark; decoded CSV content otherwise exactly unchanged. Current code emits the corrected label directly.",
-  "desktop_replay_validation": "Aug31, 1m capital, 5 models: all 41 serialized account/execution tables exactly equal to the corresponding full-study baseline, including corrected stale-mark provenance.",
-  "test_suite": "72 passed; includes causal source/depth/account checks, export trust boundaries and retrospective closing-state evidence.",
-  "engine_commit": "91a5a92fb0d93fb8de3e21e06b2b0fd057dd12b6",
-  "engine_repository": "http://172.16.10.26/lishengen/factor-liquidity"
+  "window_selection_reason": "contiguous existing evidence-supported stage window; not a replacement claim for the blocked July-September study",
+  "trading_days": 26,
+  "capacity_thresholds": null,
+  "scenarios": 25,
+  "quote_input_mode": "prepared_daily_cache",
+  "prepared_cache_rows": 666839,
+  "prepared_cache_raw_row_limit": 1000000,
+  "prepared_cache_limit_role": "engineering memory guard; not a financial or capacity parameter",
+  "engine_commit": "f60025173e5115d2ebb860cb9a88db3e7a59f2f6",
+  "test_suite": "156 passed; PYTHONPATH=src .venv/bin/python -m pytest -q",
+  "original_window_blockers": {
+    "l2_missing_all_30_codes": [
+      "2026-07-01",
+      "2026-07-02"
+    ],
+    "corporate_action_lifecycle_coverage": "uncovered natural-date ranges remain in July and September; see original input quality"
+  }
 }

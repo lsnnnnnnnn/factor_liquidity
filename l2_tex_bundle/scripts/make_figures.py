@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Redraw report panels from the small, public derived tables. No database access."""
+"""Redraw the continuous-account report from public derived tables only."""
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 import json
 from pathlib import Path
 import shutil
@@ -18,7 +17,9 @@ import pandas as pd
 
 NAVY, TEAL, AMBER = "#274158", "#167C86", "#B97A2B"
 INK, MUTED, GRID, PAPER = "#263D4D", "#637784", "#DFE5E7", "#FAFBF9"
-COLORS = {.05: AMBER, .1: TEAL, .2: NAVY}
+MODELS = ["reference", "unlimited", "p0.05", "p0.1", "p0.2"]
+LABELS = {"reference": "按参考价全成", "unlimited": "L2 不限参与率", "p0.05": "参与率 5%", "p0.1": "参与率 10%", "p0.2": "参与率 20%"}
+COLORS = {"reference": "#8A9196", "unlimited": NAVY, "p0.05": AMBER, "p0.1": TEAL, "p0.2": "#7E659A"}
 
 
 def setup(font):
@@ -42,28 +43,27 @@ def setup(font):
                          "axes.spines.left": False, "axes.facecolor": PAPER,
                          "figure.facecolor": PAPER, "grid.color": GRID, "grid.linewidth": .6,
                          "lines.linewidth": 1.7, "lines.markersize": 4,
-                         "legend.frameon": False, "legend.fontsize": 7.3,
+                         "legend.frameon": False, "legend.fontsize": 7.1,
                          "axes.unicode_minus": False,
                          "pdf.fonttype": 3 if font.suffix.lower() in {".otf", ".ttc"} else 42,
                          "savefig.dpi": 240})
 
 
-def panels(n=2, height=2.8):
-    fig, axes = plt.subplots(1, n, figsize=(6.5, height), squeeze=False)
-    fig.subplots_adjust(left=.09, right=.985, bottom=.24, top=.82, wspace=.38)
-    for ax in axes.flat:
+def panels(height=2.8):
+    fig, axes = plt.subplots(1, 2, figsize=(6.5, height))
+    fig.subplots_adjust(left=.09, right=.985, bottom=.25, top=.78, wspace=.4)
+    for ax in axes:
         ax.set_axisbelow(True)
         ax.grid(axis="y")
         ax.tick_params(length=0, pad=4)
-    return fig, list(axes.flat)
+    return fig, axes
 
 
 def save(fig, output, name, note):
-    fig.text(.09, .04, note, color=MUTED, fontsize=7)
+    fig.text(.09, .035, note, color=MUTED, fontsize=7)
     for suffix in ["pdf", "png"]:
         fig.savefig(output / f"{name}.{suffix}")
     plt.close(fig)
-
 
 
 def tex(value):
@@ -71,306 +71,267 @@ def tex(value):
     return "".join(replacements.get(char, char) for char in str(value))
 
 
-def demand(rows):
-    return rows.target_qty * rows.reference_price
+def select(frame, capital, model="p0.1"):
+    return frame.loc[frame.capital.eq(capital) & frame.model.eq(model)]
 
 
-def weighted(rows, field, weights):
-    total = weights.sum()
-    return float((rows[field] * weights).sum() / total) if total else np.nan
-
-
-def selected(frame, capital=None, rate=None):
-    rows = frame.loc[frame.is_base.eq(1)]
-    if capital is not None:
-        rows = rows.loc[rows.capital.eq(capital)]
-    if rate is not None:
-        rows = rows.loc[rows.participation.eq(rate)]
-    return rows
-
-
-def date_axis(ax, dates):
-    step = 2 if len(dates) > 8 else 1
-    indexes = list(range(0, len(dates), step))
+def date_axis(ax, dates, every=1):
+    indexes = list(range(0, len(dates), every))
     if indexes[-1] != len(dates)-1:
         indexes.append(len(dates)-1)
-    ax.set_xticks(indexes, [date[5:] for date in np.asarray(dates)[indexes]], rotation=35, ha="right")
-    ax.set_xlabel("调仓日期", labelpad=5)
+    ax.set_xticks(indexes, [dates[i][5:] for i in indexes], rotation=30, ha="right")
+    ax.set_xlabel("日期", labelpad=5)
 
 
-def completion(summary, output):
-    rows = selected(summary)
-    capitals = sorted(rows.capital.unique())
-    fig, axes = panels(3, 2.7)
-    fig.subplots_adjust(left=.065, wspace=.27)
-    for ax, field, title in zip(axes, ["completion_30", "completion_60", "completion_day"], ["A  30 个交易分钟", "B  60 个交易分钟", "C  当日结束"]):
-        for rate, color in COLORS.items():
-            values = [weighted(selected(rows, capital, rate), field, selected(rows, capital, rate).target_reference_notional) * 100 for capital in capitals]
-            ax.plot(range(len(capitals)), values, marker="o", color=color, label=f"参与率 {rate:.0%}")
-        ax.set_title(title, loc="left", pad=10)
-        ax.set_xticks(range(len(capitals)), [f"{capital/1e4:,.0f}" for capital in capitals])
-        ax.set_xlabel("资金（万元）", labelpad=7)
-        ax.set_ylim(-3, 104)
-        ax.set_yticks([0,25,50,75,100])
-    axes[0].set_ylabel("完成率（按计划金额，%）")
-    fig.legend(*axes[0].get_legend_handles_labels(), loc="upper center", bbox_to_anchor=(.53,1.015), ncol=3)
-    save(fig, output, "01_completion", "完成率按全部计划金额计算；买卖金额相加，未成交部分仍计入原计划。")
+def legend(fig, ax, columns=3):
+    fig.legend(*ax.get_legend_handles_labels(), loc="upper center", bbox_to_anchor=(.53, 1.01), ncol=columns)
 
 
-def event_stability(summary, orders, output):
+def nav_path(summary, daily, output):
     capital = summary.capital.max()
-    rows = selected(summary, capital, .1).sort_values("event_date")
-    dates = rows.event_date.tolist()
-    fig, (left, right) = panels(height=2.75)
-    left.set_title("A  1 亿元、10%：各日完成情况", loc="left", pad=10)
-    for field, label, color in zip(["completion_30", "completion_60", "completion_day"], ["30 分钟", "60 分钟", "当日"], [AMBER, TEAL, NAVY]):
+    fig, (left, right) = panels(2.9)
+    for model in MODELS:
+        rows = select(daily, capital, model).sort_values("trade_date")
+        dates = rows.trade_date.tolist()
+        left.plot(range(len(rows)), rows.normalized_nav, label=LABELS[model], color=COLORS[model], ls="--" if model=="reference" else "-")
+        right.plot(range(len(rows)), rows.drawdown*100, color=COLORS[model], ls="--" if model=="reference" else "-")
+    left.set(title="A  净资产从 1 开始", ylabel="净值（初始资金 = 1）")
+    right.set(title="B  比此前最高净值低多少", ylabel="回撤（%）")
+    for ax in [left, right]:
+        date_axis(ax, dates, 5)
+    left.axhline(1, color=MUTED, lw=.6)
+    right.axhline(0, color=MUTED, lw=.6)
+    legend(fig, left)
+    save(fig, output, "01_nav_drawdown", "1 亿元；7/31 全现金开始，8/3 首次买入；全部交易日连续估值，期间不重置账户。")
+
+
+def completion(summary, batches, output):
+    rows = select(batches, summary.capital.max()).sort_values("rebalance_date")
+    dates = rows.rebalance_date.tolist()
+    fig, (left, right) = panels()
+    for field, label, color in [("completion_30", "30 分钟", AMBER), ("completion_60", "60 分钟", TEAL), ("completion_day", "当日", NAVY)]:
         left.plot(range(len(rows)), rows[field]*100, marker="o", color=color, label=label)
-    right.set_title("B  当日结束时，买卖各完成多少", loc="left", pad=10)
-    source = selected(orders, capital, .1)
     for side, label, color in [("buy", "买入", TEAL), ("sell", "卖出", AMBER)]:
-        values = []
-        for date in dates:
-            group = source.loc[source.event_date.eq(date) & source.side.eq(side)]
-            values.append(weighted(group, "completion_eod", demand(group))*100)
-        right.plot(range(len(dates)), values, marker="o", color=color, label=label)
-    for ax in [left,right]:
+        right.plot(range(len(rows)), rows[f"{side}_completion_day"]*100, marker="o", color=color, label=label)
+    left.set_title("A  每次调仓进行到哪里", loc="left", pad=10)
+    right.set_title("B  当天买入和卖出完成多少", loc="left", pad=10)
+    for ax in [left, right]:
         date_axis(ax, dates)
-        ax.set_ylim(-3,104)
-        ax.set_ylabel("完成率（按计划金额，%）")
-        ax.legend(fontsize=7, loc="best")
-    save(fig, output, "02_event_stability", "每个日期重新设定持仓和现金；连线只方便比较日期，不表示持仓连续变化。")
+        ax.set_ylim(-3, 105)
+        ax.set_ylabel("完成率（按本次计划金额，%）")
+        ax.legend(fontsize=7, loc="lower left")
+    save(fig, output, "02_rebalance_completion", "1 亿元、10% 参与率；每次按当天实际需要买卖的全部金额计算，首次没有卖出需求。")
 
 
-def side_stratum(summary, orders, output):
-    rows = selected(orders, summary.capital.max(), .1)
-    strata = sorted(rows.stratum.unique(), key=lambda value: {"low": 0, "middle": 1, "mid": 1, "medium": 1, "high": 2}.get(str(value), 3))
-    names = {"low": "低", "middle": "中", "mid": "中", "medium": "中", "high": "高"}
-    fig, (left,right) = panels(height=2.4)
-    left.set_title("A  按股票成交活跃程度分组",loc="left",pad=10)
-    right.set_title("B  买入和卖出各完成多少",loc="left",pad=10)
-    for side, label, color, shift in [("buy", "买入", TEAL, -.18),("sell", "卖出", AMBER, .18)]:
-        values=[]
-        for stratum in strata:
-            group=rows.loc[rows.side.eq(side) & rows.stratum.eq(stratum)]
-            values.append(weighted(group, "completion_eod", demand(group))*100)
-        left.bar(np.arange(len(strata))+shift,values,width=.32,color=color,label=label)
-        group=rows.loc[rows.side.eq(side)]
-        values=[weighted(group,field,demand(group))*100 for field in ["completion_30m","completion_60m","completion_eod"]]
-        right.bar(np.arange(3)+shift,values,width=.32,color=color,label=label)
-    left.set_xticks(range(len(strata)),[names.get(str(value),str(value)) for value in strata])
-    left.set_xlabel("成交活跃程度（按 3 月成交额分组）",labelpad=7)
-    right.set_xticks(range(3),["30 分钟","60 分钟","当日"])
-    for ax in [left,right]:
-        ax.set_ylim(0,105)
-        ax.set_ylabel("完成率（按计划金额，%）")
-    fig.legend(*left.get_legend_handles_labels(),loc="upper center",bbox_to_anchor=(.53,1.015),ncol=2)
-    save(fig,output,"03_side_stratum","1 亿元、10% 参与率；每组分别按原计划金额计算，未成交部分不删除。")
+def position_gap(summary, batches, output):
+    capital = summary.capital.max()
+    rows = select(batches, capital).sort_values("rebalance_date")
+    dates = rows.rebalance_date.tolist()
+    fig, (left, right) = panels()
+    x = np.arange(len(rows))
+    buy = rows.buy_shortfall_reference_notional/rows.sizing_nav*100
+    sell = rows.unsold_reference_notional/rows.sizing_nav*100
+    left.bar(x, buy, color=TEAL, label="还没买到")
+    left.bar(x, sell, bottom=buy, color=AMBER, label="还没卖掉")
+    left.set_title("A  收盘持仓与本次目标的差距", loc="left", pad=10)
+    left.set_ylabel("差额 / 调仓时净资产（%）")
+    left.legend(fontsize=7)
+    for model in ["p0.05", "p0.1", "p0.2"]:
+        group = select(batches, capital, model).sort_values("rebalance_date")
+        right.plot(range(len(group)), group.demand_reference_notional/group.sizing_nav*100,
+                   marker="o", color=COLORS[model], label=LABELS[model])
+    right.set_title("B  这次实际需要买卖多少", loc="left", pad=10)
+    right.set_ylabel("买卖计划金额 / 净资产（%）")
+    right.legend(fontsize=7)
+    for ax in [left, right]:
+        date_axis(ax, dates)
+    save(fig, output, "03_position_gap", "1 亿元；左图为 10% 参与率，按同一参考价换算；右图买卖相加，不相互抵消。")
 
 
-def duration_slippage(summary, orders, output):
-    rows=selected(orders,summary.capital.max())
-    fig,(left,right)=panels(height=2.4)
-    left.set_title("A  已做完的订单花了多长时间",loc="left",pad=10)
-    right.set_title("B  成交价比参考价差多少",loc="left",pad=10)
-    ticks=[]
-    for index,(rate,color) in enumerate(COLORS.items()):
-        group=rows.loc[rows.participation.eq(rate)]
-        done=group.loc[group.remaining_qty.eq(0),"completion_trading_minutes"].dropna().sort_values()
-        if len(done):
-            left.step(done,np.arange(1,len(done)+1)/len(done)*100,where="post",color=color,label=f"{rate:.0%}：完成 {len(done)}/{len(group)}")
-        else:
-            left.plot([],[],color=color,label=f"{rate:.0%}：完成 0/{len(group)}")
-        slip=group.loc[group.filled_qty.gt(0),"slippage_bps"].dropna()
-        if len(slip):
-            artists=right.boxplot([slip],positions=[index],widths=.45,patch_artist=True,manage_ticks=False,
-                flierprops={"marker":".","markersize":2,"markeredgecolor":color,"alpha":.45},medianprops={"color":INK,"linewidth":1.2})
-            artists["boxes"][0].set(facecolor=color,alpha=.45)
-        ticks.append(f"{rate:.0%}\n成交 {len(slip)} 单")
-    left.set_xlabel("完成用时（交易分钟）",labelpad=7)
-    left.set_ylabel("已完成订单的累计占比（%）")
-    left.set_xlim(0,240)
-    left.set_ylim(0,104)
-    left.legend(fontsize=6.6,loc="lower right")
-    right.set_xticks(range(len(COLORS)),ticks)
-    right.set_ylabel("滑点（bp；正值不利）")
-    right.axhline(0,color=MUTED,lw=.7)
-    save(fig,output,"04_duration_slippage","未完成订单另计笔数；箱内为中间一半订单，中线为中位数，小点为较极端的结果。")
+def capital_results(summary, output):
+    capitals = sorted(summary.capital.unique())
+    fig, (left, right) = panels()
+    for model in MODELS:
+        rows = summary.loc[summary.model.eq(model)].sort_values("capital")
+        style = "--" if model=="reference" else "-"
+        left.plot(range(len(rows)), rows.total_return_pct, marker="o", color=COLORS[model], ls=style, label=LABELS[model])
+        right.plot(range(len(rows)), rows.max_drawdown_pct, marker="o", color=COLORS[model], ls=style)
+    left.set(title="A  全期扣费后收益", ylabel="累计收益（%）")
+    right.set(title="B  全期最大回撤", ylabel="从此前高点下跌（%）")
+    for ax in [left, right]:
+        ax.set_xticks(range(len(capitals)), [f"{c/1e4:,.0f}" for c in capitals])
+        ax.set_xlabel("初始资金（万元）", labelpad=7)
+    legend(fig, left)
+    save(fig, output, "04_capital_results", "7/31 至 9/4 的连续账户；每组按自己的净资产调仓，资金档位在图上等距排列。")
 
 
-def returns_constraints(summary, orders, output):
-    rows=selected(summary,summary.capital.max())
-    fig,(left,right)=panels(height=2.9)
-    fig.subplots_adjust(wspace=.8)
-    left.set_title("A  各日收益与参考结果的差别",loc="left",pad=10)
-    for index,(rate,color) in enumerate(COLORS.items()):
-        values=rows.loc[rows.participation.eq(rate)].sort_values("event_date").return_diff_pp.to_numpy()
-        left.scatter(index+np.linspace(-.1,.1,len(values)),values,color=color,s=14,alpha=.8)
-        left.plot([index-.15,index+.15],[np.median(values)]*2,color=INK,lw=1.5)
-    left.set_xticks(range(len(COLORS)),[f"{rate:.0%}" for rate in COLORS])
-    left.set_xlabel("参与率",labelpad=7)
-    left.set_ylabel("当日收益差（百分点）")
-    left.axhline(0,color=MUTED,lw=.7)
-    right.set_title("B  未完成订单遇到的限制",loc="left",pad=10)
-    counts=Counter()
-    groups={"participation_budget_bound":"参与率限制", "rounded_participation_budget_zero":"取整后不足100股",
-        "source_unexplained_gap":"行情间隔或时段切换", "arrival_gap_or_session_boundary":"行情间隔或时段切换",
-        "partial_visible_depth":"盘口数量不足", "no_opposing_depth":"盘口数量不足", "demo_lot_residual":"剩余不足100股",
-        "max_child_quantity_bound":"单次下单数量上限", "sellable_constraint":"可卖数量不足", "suspended":"有停牌记录",
-        "retrospective_market_suspension":"停牌环境", "evidenced_suspension":"停牌证据",
-        "source_volume_acc_mismatch":"区间量额核对", "source_turnover_acc_mismatch":"区间量额核对",
-        "source_invalid_interval_volume":"区间成交量无效", "source_budget_reserved_by_other_order":"数量已被其他订单占用",
-        "evidenced_locked_no_opposing_depth":"封板无对手盘", "opposing_order_deferred":"反向单等待"}
-    skipped={"source_outside_continuous","source_session_boundary","source_day_reset","source_no_preceding_snapshot"}
-    source=selected(orders,summary.capital.max(),.1)
-    source=source.loc[source.remaining_qty.gt(0)]
-    for raw in source.constraint_counts_json.dropna():
-        for reason,count in json.loads(raw).items():
-            if reason not in skipped:
-                counts[groups.get(reason,reason)]+=count
-    ordered=sorted(counts.items(),key=lambda item:item[1])
-    if ordered:
-        right.barh([key for key,_ in ordered],[value for _,value in ordered],color=AMBER,height=.6)
-        right.tick_params(axis="y",labelsize=6.2)
-        right.set_xlim(0,max(value for _,value in ordered)*1.18)
-        right.ticklabel_format(axis="x",style="sci",scilimits=(4,4))
+def validate(summary, daily, orders, targets, batches, signals, metadata):
+    assert (metadata["start"], metadata["end"], metadata["trading_days"])==("2026-07-31", "2026-09-04", 26)
+    assert metadata["rebalance_dates"]==[f"2026-08-{day}" for day in ["03", "10", "17", "24", "31"]]
+    assert metadata["stock_count"]==30
+    assert not summary.scenario.duplicated().any(), "每个连续场景只能有一行汇总"
+    assert set(summary.model)==set(MODELS), "必须保留全部五种比较方法"
+    assert len(summary)==summary.capital.nunique()*len(MODELS)
+    assert summary.audit_passed.astype(str).str.lower().isin(["true", "1"]).all()
+    assert not daily.duplicated(["scenario", "trade_date"]).any()
+    assert not batches.duplicated(["scenario", "rebalance_date"]).any()
+    expected_dates = sorted(daily.trade_date.unique())
+    assert expected_dates[0]==metadata["start"] and expected_dates[-1]==metadata["end"]
+    assert len(expected_dates)==metadata["trading_days"]
+    for row in summary.itertuples():
+        path = daily.loc[daily.scenario.eq(row.scenario)].sort_values("trade_date")
+        assert path.trade_date.tolist()==expected_dates, "不能删掉中间交易日"
+        values = path.nav.to_numpy(float)
+        assert np.isclose(values[0], row.capital), "7/31 应保留全现金、无交易的起点"
+        assert np.allclose(path.normalized_nav, values/row.capital)
+        assert np.allclose(path.cumulative_return, values/row.capital-1)
+        assert np.allclose(path.daily_return, values/np.r_[row.capital, values[:-1]]-1)
+        drawdown = values/np.maximum.accumulate(np.r_[row.capital, values])[1:]-1
+        assert np.allclose(path.drawdown, drawdown)
+        assert np.isclose(row.total_return_pct, (values[-1]/row.capital-1)*100)
+        assert np.isclose(row.max_drawdown_pct, max(0, -drawdown.min()*100))
+        parents = orders.loc[orders.scenario.eq(row.scenario)]
+        amounts = parents.quantity*parents.reference_price
+        assert np.isclose(row.demand_reference_notional, amounts.sum())
+        for source, target in [("completion_30m", "completion_30"), ("completion_60m", "completion_60"), ("completion_eod", "completion_day")]:
+            assert np.isclose(getattr(row, target), (parents[source]*amounts).sum()/amounts.sum())
+        reference = summary.loc[summary.capital.eq(row.capital) & summary.model.eq("reference")].iloc[0]
+        assert np.isclose(row.return_diff_pp, row.total_return_pct-reference.total_return_pct)
+    assert np.allclose(orders.quantity, orders.filled_quantity+orders.remaining_quantity)
+    for frame in [summary, batches]:
+        assert frame.completion_30.le(frame.completion_60+1e-10).all()
+        assert frame.completion_60.le(frame.completion_day+1e-10).all()
+        assert frame.completion_day.between(0, 1+1e-10).all()
+    assert np.allclose(targets.economic_position, targets.actual_position+targets.receivable_quantity)
+    assert np.allclose(targets.net_quantity, targets.target_quantity-targets.economic_position)
+    # Same weights, not the same future order quantities: each account has its own NAV and holdings.
+    weights = targets.groupby(["submitted_at", "instrument"]).target_weight.nunique()
+    assert weights.eq(1).all()
+    assert targets.groupby(["scenario", "submitted_at"]).instrument.nunique().eq(30).all()
+    assert targets.groupby("scenario").submitted_at.nunique().eq(5).all()
+    assert batches.groupby("scenario").rebalance_date.nunique().eq(5).all()
+    assert signals.groupby("rebalance_date").target_weight.sum().sub(1).abs().lt(1e-10).all()
+    assert signals.signal_date.lt(signals.rebalance_date).all()
+    for _, row in batches.iterrows():
+        parents = orders.loc[orders.scenario.eq(row.scenario) & orders.submitted_at.eq(row.submitted_at)]
+        amount = parents.quantity*parents.reference_price
+        assert np.isclose(row.demand_reference_notional, amount.sum())
+        assert np.isclose(row.position_gap_reference_notional, row.buy_shortfall_reference_notional+row.unsold_reference_notional)
+        assert np.isclose(row.position_gap_pct_nav, row.position_gap_reference_notional/row.sizing_nav*100)
+
+
+def write_results(summary, daily, orders, batches, actions, metadata, root):
+    capital = summary.capital.max()
+    large = select(summary, capital).iloc[0]
+    small = select(summary, summary.capital.min()).iloc[0]
+    reference = select(summary, capital, "reference").iloc[0]
+    selected_batches = select(batches, capital).sort_values("rebalance_date")
+    def percent(value, digits=2):
+        return f"{value:.{digits}f}\\%"
+    def signed(value, digits=2):
+        return f"{value:+.{digits}f}"
+    commands = {}
+    commands["StudyConclusion"] = (
+        f"这次让同一账户连续运行 {metadata['trading_days']} 个交易日，看成交不充分会怎样逐步改变持仓和收益。"
+        f"1 亿元、10\\% 参与率下，全期收益为 {percent(large.total_return_pct)}，"
+        f"比全部按参考价成交的账户{('高' if large.return_diff_pp>=0 else '低')} {abs(large.return_diff_pp):.2f} 个百分点；"
+        f"最大回撤为 {percent(large.max_drawdown_pct)}。每次调仓的成交进度及收盘持仓差距见后文，不能只按收益高低判断成交好坏。")
+    commands["TradingDays"] = str(metadata["trading_days"])
+    commands["ScenarioCount"] = str(len(summary))
+    commands["OrderCount"] = f"{len(orders):,}"
+    commands["RebalanceCount"] = str(len(metadata["rebalance_dates"]))
+    commands["NavNarrative"] = (
+        f"图中每条线都是从 7 月 31 日开始、初始资金 1 亿元的一个账户。"
+        f"10\\% 参与率账户最后的净值为 {large.final_nav/capital:.4f}，"
+        f"参考账户为 {reference.final_nav/capital:.4f}。右图的最大回撤分别为 {percent(large.max_drawdown_pct)} 和 {percent(reference.max_drawdown_pct)}。"
+        "没有调仓的日期也照常估值，因此曲线包含持仓价格变化，而不是把五次当天收益接起来。")
+    commands["CompletionNarrative"] = (
+        f"1 亿元、10\\% 参与率的五次买卖计划合计后，30 分钟、60 分钟和当日完成率分别为 "
+        f"{percent(large.completion_30*100)}、{percent(large.completion_60*100)}、{percent(large.completion_day*100)}。"
+        f"100 万元账户的当日完成率为 {percent(small.completion_day*100)}。"
+        "这是各组自己的实际需求完成率；前次少买、少卖会改变下次的需求，不能称为同一份固定订单的对照。")
+    commands["ModelRows"] = "\n".join(
+        f"{tex(LABELS[model])} & {row.completion_30*100:.2f} & {row.completion_60*100:.2f} & {row.completion_day*100:.2f} & {int(row.incomplete_eod_orders)} \\\\"
+        for model in MODELS for row in select(summary, capital, model).itertuples())
+    commands["GapNarrative"] = (
+        f"1 亿元、10\\% 参与率下，五次调仓收盘后的持仓差距占当次净资产的比例，"
+        f"最低为 {percent(selected_batches.position_gap_pct_nav.min())}，最高为 {percent(selected_batches.position_gap_pct_nav.max())}。"
+        "左图把差距分成还没有买到的股票和还没有卖掉的股票；两者相加，不用多买一只股票去抵消另一只少买的股票。")
+    commands["LifecycleNarrative"] = (
+        f"这组共有 {int(large.incomplete_eod_orders)} 笔订单在提出的当天没有全部做完，"
+        f"其中 {int(large.ever_carried_orders)} 笔曾因特殊状态延续到后面的交易日；"
+        f"研究结束时仍在等待执行的有 {int(large.open_at_end_orders)} 笔。"
+        "前一个数字统计每笔任务提出当天，后一个数字只数期末仍有效的任务。普通订单到期后，已经成交的持仓仍留在账户里。")
+    source = select(orders, capital)
+    filled = source.loc[source.filled_quantity.gt(0)]
+    weights = filled.filled_quantity*filled.reference_price
+    assert filled.slippage_bps.notna().all() and weights.sum()>0
+    slippage = float((filled.slippage_bps*weights).sum()/weights.sum())
+    completed = source.loc[source.remaining_quantity.le(1e-9) & source.filled_quantity.gt(0)]
+    assert len(completed)>0 and completed.completion_minutes.notna().all()
+    commands["ExecutionNarrative"] = (
+        f"1 亿元、10\\% 参与率下，有成交部分相对各次参考价的滑点为 {signed(slippage)} bp，"
+        "按实际成交股数乘参考价加权，未成交部分不虚构成交价格。正数表示买得更贵或卖得更便宜，1 bp 等于 0.01\\%。"
+        f"到本窗口结束，共 {len(completed)} 笔订单已全部做完，完成用时的中位数为 {completed.completion_minutes.median():.1f} 个交易分钟；"
+        f"另有 {int(source.remaining_quantity.gt(1e-9).sum())} 笔历史订单仍有未完成数量，不放进耗时中位数。"
+        "用时不计午休和隔夜；这些价差还含等待期间的市场价格变化，不能都称为自身下单造成的冲击。")
+    commands["CapitalRows"] = "\n".join(
+        f"{row.capital/1e4:,.0f} & {signed(row.total_return_pct)} & {signed(row.return_diff_pp)} & {row.max_drawdown_pct:.2f} & {row.total_fees/1e4:.2f} \\\\"
+        for row in summary.loc[summary.model.eq("p0.1")].sort_values("capital").itertuples())
+    commands["ReturnNarrative"] = (
+        f"图中比较同一选股方法在不同初始资金下的全期结果。1 亿元、10\\% 参与率的收益差为 "
+        f"{signed(large.return_diff_pp)} 个百分点，交易费用共 {large.total_fees/1e4:.2f} 万元。"
+        "收益差包含成交价、成交时间、未买到或未卖掉造成的持仓变化，以及后续按各自净资产重新调仓的影响；不能全部归结为价格冲击。")
+    first_action = actions.loc[actions.instrument.str.startswith("000681")]
+    second_action = select(actions, capital).loc[lambda rows: rows.instrument.str.startswith("000166")]
+    assert len(first_action)==len(summary) and len(second_action)==1
+    assert first_action.recorded_quantity.eq(0).all() and first_action.cash_received.eq(0).all()
+    action = second_action.iloc[0]
+    if actions.recorded_quantity.eq(0).all():
+        assert actions.cash_recognized.eq(0).all() and actions.cash_received.eq(0).all()
+        commands["ActionNarrative"] = (
+            "本窗口有两条已知现金分红：000681 在 7 月 31 日登记、8 月 3 日付款，000166 在 8 月 18 日登记、19 日付款。"
+            "25 个账户在两次登记时的持股都为零，实际应收和实收分红也都为零。"
+            "因此，真实样本只核对了零持股路径；非零持股的分红入账由合成手算测试验证，不能说这次真实样本已验证实际领取分红。")
     else:
-        right.text(.5,.5,"没有未完成订单的限制记录",transform=right.transAxes,ha="center")
-    right.set_xlabel("1 亿元、10%：遇到该限制的次数",labelpad=7)
-    right.grid(False)
-    right.grid(axis="x")
-    save(fig,output,"05_returns_constraints","左图每点为一个调仓日，黑线为中位数；右图同一次尝试可能同时受多种限制。")
-
-
-def write_results(summary, orders, quality, coverage, metadata, root):
-    base=selected(summary)
-    capital=base.capital.max()
-    small=selected(summary,base.capital.min(),.1)
-    big=selected(summary,capital,.1)
-    source=selected(orders,capital,.1)
-    percent=lambda rows,field: weighted(rows,field,rows.target_reference_notional)*100
-    done=source.loc[source.remaining_qty.eq(0),"completion_trading_minutes"].dropna()
-    incomplete=int(source.remaining_qty.gt(0).sum())
-    side_rates={side: weighted(source.loc[source.side.eq(side)],"completion_eod",demand(source.loc[source.side.eq(side)]))*100 for side in ["buy","sell"]}
-    event_count=base.event_date.nunique()
-    values={"EpisodeCount":str(event_count),"PrimaryScenarioCount":str(len(base)),"DefaultDelay":f"{big.delay_ms.iloc[0]:g}","DefaultRefresh":"保守扣减"}
-    values["StudyConclusion"]=(
-        "\\begin{itemize}"
-        f"\\item 资金越大，按计划完成买卖越困难。参与率为 10\\% 时，资金从 100 万元增至 1 亿元，当日完成率从 {percent(small,'completion_day'):.2f}\\% 降至 {percent(big,'completion_day'):.2f}\\%；1 亿元在前 30、60 分钟只完成 {percent(big,'completion_30'):.2f}\\%、{percent(big,'completion_60'):.2f}\\%。"
-        f"\\item 大资金下，买入比卖出更难做完。1 亿元、10\\% 参与率下，当日买入完成 {side_rates['buy']:.2f}\\%，卖出完成 {side_rates['sell']:.2f}\\%；{event_count} 个调仓日合计仍有 {incomplete:,} 笔订单没有全部完成。"
-        f"\\item 成交限制会改变当天收益。与全部按参考价成交相比，1 亿元、10\\% 参与率下，{event_count} 个当日收益差的中位数为 {big.return_diff_pp.median():+.4f} 个百分点。"
-        "\\end{itemize}")
-    actual_rows=int(quality.rows.sum())
-    missing=coverage.loc[coverage.rows.eq(0)]
-    excluded=sorted(set(coverage.date)-set(base.event_date))
-    values["QualityNarrative"]=(f"原计划 14 个调仓日，每天 30 只股票，共应有 420 份单只股票的日行情。实际保留 {event_count} 天，共 {actual_rows:,} 条十档快照，其中连续竞价时段 {int(quality.continuous_rows.sum()):,} 条，能用于计算下单数量的 {int(quality.valid_source_rows.sum()):,} 条。{tex('、'.join(excluded))} 的 {len(missing)} 只股票均无行情，已单独列出并排除。区间成交量和成交额共发现 {int(quality.volume_mismatches.sum()):,} 条核对差异；连续竞价内，快照相隔超过 10 秒的情况有 {int(quality.continuous_gaps_gt10s.sum()):,} 次，最长 {quality.continuous_max_gap_seconds.max():g} 秒。")
-    official=quality.loc[quality.rows.gt(0)&quality.daily_volume.notna()]
-    amount_micro=official.loc[official.daily_amount_delta.abs().gt(.02)]
-    assert official.daily_volume_delta.abs().le(1e-6).all(), "日终数量差异需要明确披露"
-    daily_text=f"能与官方日线核对的 {len(official)} 份日行情，日终累计成交量均在计算误差范围内一致。{len(amount_micro)} 份的成交额有微小差别，最大为 {official.daily_amount_delta.abs().max():.2f} 元。"
-    for row in quality.loc[quality.rows.gt(0)&quality.daily_volume.isna()].itertuples():
-        assert str(row.historical_suspension_evidence).lower() in {"true","1"}
-        daily_text+=f"{tex(row.symbol)} 在 {row.date[5:]} 有 {int(row.rows):,} 条快照，但没有官方日线，并查到当天停牌记录；因此用最初的参考价估值，另外标明价格没有更新，买入计划仍计入完成率。"
-    assert quality.invalid_book_rows.fillna(0).eq(0).all()
-    assert quality.continuous_crossed_book_rows.fillna(0).eq(0).all()
-    assert quality[["ask_saturated_rows","bid_saturated_rows"]].fillna(0).eq(0).all().all()
-    values["DailyQualityNarrative"]=daily_text+"没有发现买卖档位顺序错误、连续竞价买价高于卖价，或数量达到字段上限的记录。"
-    reference=base.loc[base.capital.eq(capital)&base.model.eq("reference")]
-    unlimited=base.loc[base.capital.eq(capital)&base.model.eq("unlimited")]
-    triple=lambda group: "、".join(f"{percent(group,field):.2f}\\%" for field in ["completion_30","completion_60","completion_day"])
-    values["CompletionNarrative"]=(f"以 1 亿元为例，假设全部按参考价成交，三个时点自然都是 100\\%。换成实际 L2 盘口，即使不限制参与率，30 分钟、60 分钟和当日也只能完成 {triple(unlimited)}；参与率限制为 10\\% 后，降为 {triple(big)}。这说明盘口数量本身已经构成限制，再限制每次下单数量，完成得更慢。分日期看，10\\% 参与率下当日完成率为 {big.completion_day.min()*100:.2f}\\% 至 {big.completion_day.max()*100:.2f}\\%，13 天的中位数为 {big.completion_day.median()*100:.2f}\\%。")
-    strata=[]
-    for name,group in source.groupby("stratum"):
-        label={"low":"较少","medium":"一般","middle":"一般","mid":"一般","high":"较活跃"}.get(str(name),tex(name))
-        strata.append(f"成交{label}的一组完成 {weighted(group,'completion_eod',demand(group))*100:.2f}\\%")
-    values["StratumNarrative"]="1 亿元、10\\% 参与率下，"+"，".join(strata)+"。股票按研究前的成交额分组，没有根据这次结果重新挑选。这只反映本次选定股票的差别，不能直接推广到全市场。"
-    median=f"{done.median():.2f}" if len(done) else "无可计算样本"
-    values["DurationNarrative"]=(f"1 亿元、10\\% 参与率下，13 天共 {len(source):,} 笔买卖订单，做完 {len(done):,} 笔，未做完 {incomplete:,} 笔。已经做完的订单，完成用时中位数为 {median} 个交易分钟；也就是其中一半不超过这个时间。未完成订单不参加这个中位数的计算。")
-    values["ReturnNarrative"]=(f"1 亿元、10\\% 参与率下，13 个调仓日的当日净收益中位数为 {big.return_pct.median():+.4f}\\%。与全部按参考价成交相比，各日收益差从 {big.return_diff_pp.min():+.4f} 到 {big.return_diff_pp.max():+.4f} 个百分点不等。实际成交更少，有时反而会少亏一些，因此收益差为正不一定表示交易做得更好，还要看原计划是否完成。这些都是单日比较，不能相加或复利成三个月收益。")
-    true=lambda column: column.astype(str).str.lower().isin(["true","1"])
-    closing=source.loc[source.remaining_qty.gt(0)&true(source.closing_directional_limit_no_depth)&true(source.closing_quote_fresh)]
-    buy_count=int(closing.side.eq("buy").sum())
-    sell_count=int(closing.side.eq("sell").sum())
-    values["ClosingNarrative"]=(f"1 亿元、10\\% 参与率下，未完成订单中有 {buy_count} 笔买单、{sell_count} 笔卖单，在 14:57 前最后 10 秒内的有效盘口中，已处于相应的官方涨跌停价，且原始盘口没有对手盘。这是事后查看收盘前行情得到的标记，只能说明那个时点的情况，不能证明全天都封板；本次也没有继续模拟这些剩余数量下一周能否成交。")
-    sensitivity=summary.loc[summary.capital.eq(capital)&summary.participation.eq(.1)&summary.is_base.eq(0)]
-    labels=[]
-    for (refresh,delay),group in sensitivity.groupby(["refresh","delay_ms"],sort=False):
-        name="每张快照重新计算可见数量" if refresh=="snapshot" else "继续扣除当天已用过的同价位数量"
-        delay_text=f"{delay/1000:g} 秒" if delay>=1000 else f"{delay:g} 毫秒"
-        labels.append(f"{name}、延迟 {delay_text}时，为 {percent(group,'completion_day'):.2f}\\%")
-    values["SensitivityNarrative"]="同样使用 1 亿元、10\\% 参与率和原来的买卖计划，改变两项假设后，当日完成率为："+"；".join(labels)+"。这些延迟都是实验参数，尚未测量真实下单耗时。"
-    three_seconds=sensitivity.loc[sensitivity.refresh.eq("conservative")&sensitivity.delay_ms.eq(3000)]
-    if len(three_seconds)==len(big):
-        paired=big.set_index("event_date").completion_day.to_frame("base").join(
-            three_seconds.set_index("event_date").completion_day.rename("three_seconds"),validate="one_to_one")
-        if paired.notna().all().all() and (paired.base-paired.three_seconds).abs().max()<=1e-4:
-            values["SensitivityNarrative"]+="1 毫秒和 3 秒的结果接近，可能因为行情快照之间本来就隔着数秒，两种延迟最终用到了同一张后续盘口。因此不能据此认定真实交易中慢 3 秒也没关系。"
-    test_count=int(metadata["test_suite"].split()[0])
-    values["ValidationNarrative"]=(f"本轮程序通过 {test_count} 项测试，{len(summary):,} 组运行结果均通过现金、持仓与负债核对。桌面重新运行 5 种成交规则，得到的 41 张结果表与原结果逐项一致。公开数据保留 {len(orders):,} 行订单指标。重画图表时还会核对：计划股数等于已成交加剩余股数，未完成订单不填写完成时间，各图表使用同一份原计划金额。")
-    lines=[f"\\newcommand{{\\{key}}}{{{value}}}" for key,value in values.items()]
-    lines.append(r"\newcommand{\CapitalRows}{%")
-    for value in sorted(base.capital.unique()):
-        group=selected(summary,value,.1)
-        lines.append(f"{value/1e4:,.0f} & {percent(group,'completion_30'):.2f} & {percent(group,'completion_60'):.2f} & {percent(group,'completion_day'):.2f} & {int(group.incomplete_orders.sum()):,} & {group.return_diff_pp.median():+.4f}\\\\")
-    lines.append("}")
-    lines.append(r"\newcommand{\QualityRows}{%")
-    for date,group in coverage.groupby("date",sort=True):
-        actual=quality.loc[quality.date.eq(date)&quality.rows.gt(0)]
-        count=int(group.rows.gt(0).sum())
-        if len(actual):
-            lines.append(f"{date[5:]} & {count}/30 & {int(actual.rows.sum()):,} & {int(actual.volume_mismatches.sum()):,} & {int(actual.turnover_mismatches.sum()):,} & {int(actual.continuous_gaps_gt10s.sum()):,}\\\\")
-        else:
-            lines.append(f"{date[5:]} & {count}/30 & 0 & -- & -- & --\\\\")
-    lines.append("}")
-    (root/"results.tex").write_text("\n".join(lines)+"\n",encoding="utf-8")
-
-
-def validate(summary,orders):
-    keys=["event_date","scenario"]
-    assert not summary.duplicated(keys).any(), "每事件/情景必须唯一"
-    for field in ["completion_30","completion_60","completion_day"]:
-        assert summary[field].between(0,1).all(), f"{field} 必须在 0..1"
-    assert summary.completion_30.le(summary.completion_60+1e-10).all()
-    assert summary.completion_60.le(summary.completion_day+1e-10).all()
-    assert np.allclose(orders.filled_qty+orders.remaining_qty,orders.target_qty)
-    assert orders.loc[orders.remaining_qty.gt(0),"completion_trading_minutes"].isna().all()
-    assert summary.audit_passed.astype(str).str.lower().isin(["true","1"]).all()
-    frozen=orders.groupby(["event_date","capital","order_id"])[["target_qty","reference_price"]].nunique()
-    assert frozen.le(1).all().all(), "同一事件/资金的母单数量和参考价必须跨模型冻结"
-    actual=orders.assign(target=demand(orders),filled=orders.filled_qty*orders.reference_price).groupby(keys)[["target","filled"]].sum()
-    assert summary.set_index(keys).index.sort_values().equals(actual.index.sort_values()), "母单与汇总的事件/情景集合必须一致"
-    merged=summary.set_index(keys).join(actual,validate="one_to_one")
-    assert np.allclose(merged.target_reference_notional,merged.target)
-    assert np.allclose(merged.filled_reference_notional,merged.filled)
-    assert np.allclose(merged.completion_day,merged.filled/merged.target)
-    for source,target in [("completion_30m","completion_30"),("completion_60m","completion_60")]:
-        totals=(orders[source]*demand(orders)).groupby([orders[key] for key in keys]).sum()
-        assert np.allclose(merged[target],totals.reindex(merged.index)/merged.target), "时点金额完成率必须与全部母单一致"
-    assert len(selected(summary))==summary.event_date.nunique()*25, "主实验应是实际事件×25，不可遗漏情景"
+        commands["ActionNarrative"] = (
+            "本窗口有两条已知现金分红事件。000681 在 7 月 31 日登记时，全部账户都只有现金，没有持股，因此没有领取这次分红。"
+            f"000166 在 8 月 18 日登记、19 日付款；1 亿元、10\\% 参与率账户登记了 {action.recorded_quantity:,.0f} 股，"
+            f"实际收到税前现金 {action.cash_received:,.2f} 元。领取金额按各自登记时的真实持股计算，不是所有账户都分到同样金额。")
+    additional = metadata["additional_continuation_stockdays"]
+    commands["QualityNarrative"] = (
+        f"本窗口保存并读取 {metadata['raw_stockdays']:,} 个股票日、{metadata['raw_snapshot_rows']:,} 条原始快照，"
+        f"其中额外补充了 {len(additional)} 个非调仓股票日的续单行情。"
+        f"日线估值中，有 {metadata['stale_valuation_stockdays']} 个股票日凭明确停牌证据沿用此前收盘价。"
+        "这些数量只描述实际需要并核对过的输入，不表示 30 只股票每个交易日的 L2 都已完整取得。")
+    commands["ValidationNarrative"] = (
+        f"{len(summary)} 组连续账户、{len(orders):,} 笔订单全部通过引擎账户核对。"
+        f"本次代码版本为 \\texttt{{{tex(metadata['engine_commit'][:7])}}}，{int(metadata['test_suite'].split()[0])} 项引擎测试通过。"
+        "重画脚本另外检查每天净资产能否算回累计收益和回撤、是否保留全部交易日、成交与剩余股数是否守恒，以及各次调仓合计是否与完成率一致。"
+        "同一时点各组必须使用相同的目标权重，但不会要求它们未来的订单股数相同。")
+    (root/"results.tex").write_text("% Generated from current continuous-study CSV files; do not edit numbers here.\n"+"\n".join(
+        f"\\newcommand{{\\{name}}}{{{value}}}" for name, value in commands.items())+"\n")
 
 
 def main():
-    parser=argparse.ArgumentParser(description="从实际独立事件派生表重画中文报告，不连接数据库、不复利事件收益。")
-    root=Path(__file__).resolve().parents[1]
-    parser.add_argument("--data",type=Path,default=root/"data")
-    parser.add_argument("--output",type=Path,default=root/"figures")
-    parser.add_argument("--font",type=Path)
-    args=parser.parse_args()
-    summary=pd.read_csv(args.data/"summary.csv")
-    orders=pd.read_csv(args.data/"order_metrics.csv")
-    quality=pd.read_csv(args.data/"data_quality.csv")
-    metadata=json.loads((args.data/"study_metadata.json").read_text())
-    coverage=quality[["symbol","date","rows"]]
-    validate(summary,orders)
-    args.output.mkdir(parents=True,exist_ok=True)
+    parser = argparse.ArgumentParser(description="从连续账户的派生数据重画中文报告；不连接数据库。")
+    root = Path(__file__).resolve().parents[1]
+    parser.add_argument("--data", type=Path, default=root/"data")
+    parser.add_argument("--output", type=Path, default=root/"figures")
+    parser.add_argument("--font", type=Path)
+    args = parser.parse_args()
+    tables = {name: pd.read_csv(args.data/f"{name}.csv") for name in ["summary", "daily_nav", "order_metrics", "target_history", "rebalance_metrics", "signals", "corporate_action_summary"]}
+    metadata = json.loads((args.data/"study_metadata.json").read_text())
+    validate(tables["summary"], tables["daily_nav"], tables["order_metrics"], tables["target_history"], tables["rebalance_metrics"], tables["signals"], metadata)
+    args.output.mkdir(parents=True, exist_ok=True)
     setup(args.font)
-    completion(summary,args.output)
-    event_stability(summary,orders,args.output)
-    side_stratum(summary,orders,args.output)
-    duration_slippage(summary,orders,args.output)
-    returns_constraints(summary,orders,args.output)
-    write_results(summary,orders,quality,coverage,metadata,root)
-    print(f"实际 {summary.event_date.nunique()} 个事件、{len(summary)} 个情景：5 张 PDF/PNG，results.tex 与 CSV 同源。")
+    nav_path(tables["summary"], tables["daily_nav"], args.output)
+    completion(tables["summary"], tables["rebalance_metrics"], args.output)
+    position_gap(tables["summary"], tables["rebalance_metrics"], args.output)
+    capital_results(tables["summary"], args.output)
+    write_results(tables["summary"], tables["daily_nav"], tables["order_metrics"], tables["rebalance_metrics"], tables["corporate_action_summary"], metadata, root)
+    print(f"实际 {metadata['trading_days']} 个连续交易日、{len(tables['summary'])} 组账户：4 张 PDF/PNG，正文数字与 CSV 同源。")
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()

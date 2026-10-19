@@ -1,5 +1,0 @@
-level,side,price,taken_qty,visible_qty
-1,buy,10.0,300.0,300.0
-2,buy,10.01,200.0,200.0
-1,sell,9.99,200.0,200.0
-2,sell,9.98,300.0,300.0
