@@ -8,6 +8,15 @@
   "ordinary_residual": "expires that day; actual positions, cash, liabilities and entitlements persist",
   "exceptional_residual": "positive suspension or official directional limit with fresh raw zero opposing depth; cancelled at next rebalance",
   "financing": "sufficient funding; debt fully recorded; explicitly zero engineering interest",
+  "fees": {
+    "buy_rate": 0.0,
+    "sell_rate": 0.0,
+    "minimum": 0.0,
+    "minimum_unit": "parent_session"
+  },
+  "financing_rate": 0.0,
+  "cash_buffer": 0.0,
+  "funding_mode": "sufficient",
   "return_basis": "daily actual net assets divided by the unique initial capital; total return is final/initial-1",
   "corporate_actions": "point-in-time market-known versions and independently reconciled entitlements; gross cash dividends, no individual tax certification",
   "missing_data": "unknown gaps stop the continuous run; no excluded middle dates, no zero-liquidity substitution",
@@ -59,8 +68,8 @@
   "prepared_cache_rows": 666839,
   "prepared_cache_raw_row_limit": 1000000,
   "prepared_cache_limit_role": "engineering memory guard; not a financial or capacity parameter",
-  "engine_commit": "f60025173e5115d2ebb860cb9a88db3e7a59f2f6",
-  "test_suite": "156 passed; PYTHONPATH=src .venv/bin/python -m pytest -q",
+  "engine_commit": "8e8ffe5d9aee29c58088c6ed5f2a84bd3bba5016",
+  "test_suite": "158 passed; PYTHONPATH=src .venv/bin/python -m pytest -q",
   "original_window_blockers": {
     "l2_missing_all_30_codes": [
       "2026-07-01",

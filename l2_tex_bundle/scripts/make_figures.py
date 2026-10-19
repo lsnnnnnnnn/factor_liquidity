@@ -156,7 +156,7 @@ def capital_results(summary, output):
         style = "--" if model=="reference" else "-"
         left.plot(range(len(rows)), rows.total_return_pct, marker="o", color=COLORS[model], ls=style, label=LABELS[model])
         right.plot(range(len(rows)), rows.max_drawdown_pct, marker="o", color=COLORS[model], ls=style)
-    left.set(title="A  全期扣费后收益", ylabel="累计收益（%）")
+    left.set(title="A  全期收益（不计费用）", ylabel="累计收益（%）")
     right.set(title="B  全期最大回撤", ylabel="从此前高点下跌（%）")
     for ax in [left, right]:
         ax.set_xticks(range(len(capitals)), [f"{c/1e4:,.0f}" for c in capitals])
@@ -173,6 +173,9 @@ def validate(summary, daily, orders, targets, batches, signals, metadata):
     assert set(summary.model)==set(MODELS), "必须保留全部五种比较方法"
     assert len(summary)==summary.capital.nunique()*len(MODELS)
     assert summary.audit_passed.astype(str).str.lower().isin(["true", "1"]).all()
+    assert summary.total_fees.eq(0).all() and orders.fee.eq(0).all(), "本版报告只接受所有费用严格为零的新结果"
+    assert all(metadata["fees"][name]==0 for name in ["buy_rate", "sell_rate", "minimum"])
+    assert metadata["financing_rate"]==0 and metadata["cash_buffer"]==0 and metadata["funding_mode"]=="sufficient"
     assert not daily.duplicated(["scenario", "trade_date"]).any()
     assert not batches.duplicated(["scenario", "rebalance_date"]).any()
     expected_dates = sorted(daily.trade_date.unique())
@@ -232,10 +235,9 @@ def write_results(summary, daily, orders, batches, actions, metadata, root):
         return f"{value:+.{digits}f}"
     commands = {}
     commands["StudyConclusion"] = (
-        f"这次让同一账户连续运行 {metadata['trading_days']} 个交易日，看成交不充分会怎样逐步改变持仓和收益。"
-        f"1 亿元、10\\% 参与率下，全期收益为 {percent(large.total_return_pct)}，"
-        f"比全部按参考价成交的账户{('高' if large.return_diff_pp>=0 else '低')} {abs(large.return_diff_pp):.2f} 个百分点；"
-        f"最大回撤为 {percent(large.max_drawdown_pct)}。每次调仓的成交进度及收盘持仓差距见后文，不能只按收益高低判断成交好坏。")
+        f"结果显示：在 1 亿元资金、10\\% 参与率下，账户最终{('亏损' if large.total_return_pct<0 else '盈利')} {percent(abs(large.total_return_pct))}，"
+        f"比假设所有股票都能按参考价格顺利成交的情况{('多亏了' if large.return_diff_pp<0 and reference.total_return_pct<0 else '少赚了' if large.return_diff_pp<0 else '多赚了')} "
+        f"{abs(large.return_diff_pp):.2f} 个百分点，期间最大回撤为 {percent(large.max_drawdown_pct)}。每次调仓的成交进度及收盘持仓差距见后文。")
     commands["TradingDays"] = str(metadata["trading_days"])
     commands["ScenarioCount"] = str(len(summary))
     commands["OrderCount"] = f"{len(orders):,}"
@@ -276,11 +278,11 @@ def write_results(summary, daily, orders, batches, actions, metadata, root):
         f"另有 {int(source.remaining_quantity.gt(1e-9).sum())} 笔历史订单仍有未完成数量，不放进耗时中位数。"
         "用时不计午休和隔夜；这些价差还含等待期间的市场价格变化，不能都称为自身下单造成的冲击。")
     commands["CapitalRows"] = "\n".join(
-        f"{row.capital/1e4:,.0f} & {signed(row.total_return_pct)} & {signed(row.return_diff_pp)} & {row.max_drawdown_pct:.2f} & {row.total_fees/1e4:.2f} \\\\"
+        f"{row.capital/1e4:,.0f} & {signed(row.total_return_pct)} & {signed(row.return_diff_pp)} & {row.max_drawdown_pct:.2f} \\\\"
         for row in summary.loc[summary.model.eq("p0.1")].sort_values("capital").itertuples())
     commands["ReturnNarrative"] = (
         f"图中比较同一选股方法在不同初始资金下的全期结果。1 亿元、10\\% 参与率的收益差为 "
-        f"{signed(large.return_diff_pp)} 个百分点，交易费用共 {large.total_fees/1e4:.2f} 万元。"
+        f"{signed(large.return_diff_pp)} 个百分点。本轮交易费、税费、最低费和借款利息都为零，不主动预留现金。"
         "收益差包含成交价、成交时间、未买到或未卖掉造成的持仓变化，以及后续按各自净资产重新调仓的影响；不能全部归结为价格冲击。")
     first_action = actions.loc[actions.instrument.str.startswith("000681")]
     second_action = select(actions, capital).loc[lambda rows: rows.instrument.str.startswith("000166")]
