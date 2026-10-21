@@ -9,6 +9,8 @@ all: figures pdf
 
 figures:
 	$(PYTHON) scripts/make_figures.py
+	$(PYTHON) scripts/make_execution_update.py
+	$(PYTHON) scripts/make_execution_tables.py
 
 pdf:
 	mkdir -p "$(TEXMFCACHE)"

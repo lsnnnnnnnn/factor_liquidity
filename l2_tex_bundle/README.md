@@ -1,5 +1,7 @@
 # 连续账户实验：报告、源码和图表
 
+10 月 21 日附录位于 `update_20261021.tex`；`execution_results_20261021.tex` 由新增公开 CSV 生成。它保留原正文，另外报告固定券单规则对照、重新运行的连续账户和真实因子包仍缺的输入。新包是 2007—2009 年 sample1，不能用旧调试动量充当正式因子回放。新增公开表见 `data/execution_update/README.md`，私人因子载荷、持仓和完整账户不随包发布。
+
 `report.pdf` 是中文报告，`main.tex` 是正文，`results.tex` 的数字由附带 CSV 生成。账户在 2026-07-31 全现金开始，到 09-04 共 26 个交易日，每天估值；8 月 3、10、17、24、31 日调仓，共 5 次。没有调仓也不重置账户。
 
 ## 编译、重画与打包
@@ -9,6 +11,14 @@ make pdf                     # 用已有正文和矢量图编译 PDF
 make figures                 # 用 data/ 重画 PDF/240 dpi PNG，更新 results.tex
 make all                     # 重画并编译
 make bundle                  # 生成 ../dist/factor_liquidity_l2_tex_bundle.zip
+```
+
+只重画新增图与更新附录数字，可运行：
+
+```bash
+python scripts/make_execution_update.py
+python scripts/make_execution_tables.py
+make pdf
 ```
 
 使用 Python、Matplotlib、Fandol、LuaLaTeX 和 latexmk，不连接数据库。例如已有引擎环境时可运行 `make all PYTHON=/path/to/engine/.venv/bin/python`。`latexmk`、`lualatex`、`kpsewhich` 需要在 PATH 中，macOS 现有 TeX 位于 `/Library/TeX/texbin`。也可指定画图字体：
