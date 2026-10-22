@@ -1,0 +1,50 @@
+{
+  "open_observed": {
+    "file_bytes": 2511215,
+    "rows": 1376,
+    "columns": 5166,
+    "start": "2019-01-02",
+    "end": "2024-08-30",
+    "dtype_counts": {
+      "bool": 5166
+    },
+    "missing": 0,
+    "dates_match_mark": true,
+    "codes_and_order_match_mark": true,
+    "columns_name": "code",
+    "true_count": 6004502,
+    "false_count": 1103914,
+    "true_without_positive_finite_shared_open": 0,
+    "false_with_positive_finite_shared_open": 0
+  },
+  "actual_open_observed": {
+    "file_bytes": 2499207,
+    "rows": 1376,
+    "columns": 5166,
+    "start": "2019-01-02",
+    "end": "2024-08-30",
+    "dtype_counts": {
+      "bool": 5166
+    },
+    "missing": 0,
+    "dates_match_mark": true,
+    "codes_and_order_match_mark": true,
+    "columns_name": "code",
+    "true_count": 6043614,
+    "false_count": 1064802,
+    "true_without_positive_finite_shared_open": 39112,
+    "false_with_positive_finite_shared_open": 0
+  },
+  "relationships": {
+    "masks_numeric_equal": false,
+    "open_true_actual_false": 0,
+    "actual_true_open_false": 39112,
+    "finite_positive_open_count": 6004502,
+    "total_cells": 7108416
+  },
+  "actual_trade_constraints": {
+    "rows": 139409,
+    "open_observed_false": 0,
+    "actual_open_observed_false": 0
+  }
+}

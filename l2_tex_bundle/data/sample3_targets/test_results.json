@@ -1,0 +1,5 @@
+{
+  "command": "PYTHONPATH=src .venv/bin/python -m pytest -q",
+  "passed": 316,
+  "seconds": 7.01
+}

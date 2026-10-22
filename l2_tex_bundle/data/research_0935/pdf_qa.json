@@ -1,0 +1,37 @@
+{
+  "pages": 19,
+  "compiler": "LuaLaTeX via existing multi-file latexmk project",
+  "compilation_succeeded": true,
+  "original_main_tex_modified": false,
+  "user_first_11_pages_text_equal": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "user_first_11_pages_render_pixels_equal": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "pixel_comparison": "direct rendered RGB pixel comparison at identical scale; no digest",
+  "own_supplement_pages_12_to_19_rendered_and_visually_reviewed": true,
+  "final_page_19_reviewed_after_test_count_and_source_diagnostic_update": true,
+  "overfull_or_missing_character_warnings": false,
+  "extra_hash_or_checksum_verification_executed": false
+}

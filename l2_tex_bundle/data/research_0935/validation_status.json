@@ -1,0 +1,33 @@
+{
+  "formal_strategy": "default N20 sample3 H20_equal_G1",
+  "study_type": "execution pressure replay of a previously selected strategy; not out of sample",
+  "window": [
+    "2024-01-02",
+    "2024-08-30"
+  ],
+  "trading_days": 162,
+  "new_target_events": 8,
+  "new_account_initial_positions": 0,
+  "first_target": "2024-01-11",
+  "research_clock": "09:35 Asia/Shanghai",
+  "raw_quantity_account_protocol_implemented": true,
+  "raw_first_day_export_complete": true,
+  "formal_portfolio_replay_completed": false,
+  "first_two_or_three_period_returns_available": false,
+  "full_window_returns_available": false,
+  "capital_ladder_real_results_available": false,
+  "benchmark_100001_available": false,
+  "hard_blocks": [
+    "689009.SH initial target has traded daily market but zero L2; no alternative provided",
+    "dividend/account_action_lifecycle_v2 stage coverage absent"
+  ],
+  "unvalidated": [
+    "dynamic later holdings and demands L2",
+    "complete daily marks and explicit execution-state evidence",
+    "non-dividend event family completeness"
+  ],
+  "no_target_removed_or_renormalized_for_missing_data": true,
+  "first_day_source_preparation_diagnostic_completed": true,
+  "first_day_fresh_reference_stockdays": 952,
+  "nonempty_reference_older_than_10s_stockdays": 2
+}

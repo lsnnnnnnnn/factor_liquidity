@@ -1,0 +1,48 @@
+{
+  "scope": "first target date raw-source preparation and quality diagnostic only",
+  "day": "2024-01-11",
+  "requested_stockdays": 956,
+  "prepared_nonempty_stockdays": 954,
+  "raw_rows": 3754065,
+  "prepared_rows": 3754065,
+  "original_raw_fields_preserved": 60,
+  "source_valid_rows": 3594800,
+  "source_invalid_rows": 159265,
+  "book_valid_rows": 3754065,
+  "turnover_bounds_checked_rows": 2212773,
+  "diagnostic_volume_and_continuity_valid_rows": 3594800,
+  "volume_diagnostic_scope": "derived interval volume + timing + volume accumulator reasons only; not an engine volume_source_valid field, not independent capacity acceptance",
+  "reason_counts_are_nonexclusive": true,
+  "source_reason_counts": {
+    "session_boundary": 75953,
+    "outside_continuous": 74999,
+    "unexplained_gap": 82358,
+    "no_preceding_snapshot": 954
+  },
+  "fresh_reference_stockdays": 952,
+  "missing_fresh_reference_stockdays": 4,
+  "settings": {
+    "max_gap": "10s",
+    "source_turnover_check": "price_bounds",
+    "reference_max_age": "10s"
+  },
+  "orders_simulated": 0,
+  "accounts_simulated": 0,
+  "formal_ready": false,
+  "elapsed_seconds": 241.87741324980743,
+  "peak_process_memory_bytes": 259686400,
+  "nonempty_stale_reference_cases": [
+    {
+      "latest_qualified_time": "2024-01-11T09:34:48+08:00",
+      "age_seconds": 12.0
+    },
+    {
+      "latest_qualified_time": "2024-01-11T09:34:47+08:00",
+      "age_seconds": 13.0
+    }
+  ],
+  "staleness_scope": "unusable under explicit 10s research freshness setting; not an intrinsic absence of all L2",
+  "l2_zero_stockdays": 2,
+  "evidenced_suspended_zero_stockdays": 1,
+  "unknown_missing_zero_stockdays": 1
+}

@@ -1,0 +1,33 @@
+{
+  "start": "2024-01-02",
+  "end": "2024-08-30",
+  "trading_days": 162,
+  "new_target_events": 8,
+  "target_rows": 7642,
+  "source_security_columns": 5166,
+  "first_signal_source_date": "2019-01-30",
+  "first_research_target_date": "2024-01-11",
+  "source_signal_precision": "date",
+  "timezone": "Asia/Shanghai",
+  "research_decision_clock": "09:35:00",
+  "decision_clock_is_research_convention": true,
+  "target_known_before_execution_is_research_convention": true,
+  "initial_state": "new cash account; zero initial positions; no target until first in-window new-target event",
+  "fee_rate": 0,
+  "scheduled_phase": "full-history H20 from first finite source group; never restart in 2024",
+  "target_rule": "equal weights on group[T]==1 AND liquid_prior[T+1]; no second shift",
+  "membership_rule": "daily value membership[T] delivered at execution day T+1",
+  "pool_exit_rule": "engine applies daily membership[T] to its new-account targets, actual holdings and pending directions; no imported source exit mask or source-state operation order",
+  "full_target_replacement_at_signal": true,
+  "weights_renormalized_after_pool_exit": false,
+  "original_account_holdings_or_pending_imported": false,
+  "original_pool_exit_masks_imported": false,
+  "original_fill_or_open_prices_imported": false,
+  "capital_mapping_required": false,
+  "cdr_unit_rule": "689009.SH receipt and CNY/receipt; no automatic factor-of-ten conversion",
+  "ca_candidate_scopes": {
+    "first_three": 2515,
+    "full_window": 3898
+  },
+  "corporate_action_entitlements_ready": false
+}

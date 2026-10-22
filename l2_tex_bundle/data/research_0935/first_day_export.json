@@ -1,0 +1,31 @@
+{
+  "date": "2024-01-11",
+  "requested_stockdays": 956,
+  "total_rows": 3754065,
+  "nonempty_stockdays": 954,
+  "zero_stockdays": 2,
+  "all_before_export_after_counts_equal": true,
+  "total_pages": 19246,
+  "read_started_at_utc": "2026-10-22T08:29:04.364588+00:00",
+  "status": "complete",
+  "max_rows_per_request": 200,
+  "timeout_seconds": 30,
+  "concurrency": 1,
+  "raw_field_count": 60,
+  "raw_price_scale": 10000,
+  "volume_units": "share or explicitly identified receipt",
+  "raw_timestamp_semantics": "raw nanosecond false-Z Beijing wall-clock; never shifted +8h",
+  "consistency_scope": "before/export/after count equality; no atomic snapshot or equal-count revision detection",
+  "zero_l2_details": [
+    {
+      "code": "300765.SZ",
+      "state": "positive suspension evidence; retain target/pending"
+    },
+    {
+      "code": "689009.SH",
+      "state": "market traded but L2 missing; user confirms no alternate source",
+      "daily_volume": 9044143,
+      "daily_turnover_cny": 254078832
+    }
+  ]
+}

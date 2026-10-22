@@ -1,0 +1,9 @@
+signal_date,execution_date,group_count_before_liquidity,liquidity_filtered_count,target_count,target_weight_sum,all_compared_source_counts_match
+2024-01-10,2024-01-11,956,0,956,1.0,True
+2024-02-07,2024-02-08,957,0,957,1.0,True
+2024-03-14,2024-03-15,956,0,956,1.0,True
+2024-04-15,2024-04-16,956,1,955,1.0000000000000002,True
+2024-05-16,2024-05-17,949,0,949,1.0,True
+2024-06-14,2024-06-17,950,4,946,1.0,True
+2024-07-12,2024-07-15,961,0,961,1.0000000000000002,True
+2024-08-09,2024-08-12,965,3,962,1.0,True

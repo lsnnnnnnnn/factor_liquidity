@@ -1,0 +1,10 @@
+{
+  "positive_target_l2_absences": 2,
+  "positive_target_with_daily_suspension_record": 1,
+  "suspension_time_precision": "date; no intraday interval supplied",
+  "pit_view_timestamp_quality": "market_open_state_proxy; execution_constraint_only",
+  "pit_proxy_is_instruction_time": false,
+  "positive_target_other_l2_absence": "CDR; not assumed suspended",
+  "full_holding_period_coverage": false,
+  "securities_or_rows_removed": 0
+}

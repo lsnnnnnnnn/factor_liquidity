@@ -1,0 +1,93 @@
+[
+  {
+    "run": "preflight-first-two-v1",
+    "start": "2024-01-02",
+    "end": "2024-03-14",
+    "trading_days": 47,
+    "ready": false,
+    "exit_code": 2,
+    "first_target_count": 956,
+    "saved_nonempty_stockdays": 954,
+    "unknown_zero_l2_targets": 1,
+    "positive_suspended_zero_l2_targets": 1,
+    "pending_initial_raw_stockdays": 0,
+    "issue_kinds": [
+      "zero_l2_target",
+      "corporate_actions"
+    ],
+    "corporate_action_issues": [
+      "dividend/account_action_lifecycle_v2: incomplete natural-date stage coverage [['2024-01-02', '2024-03-14']]"
+    ],
+    "requested_scenarios": 25,
+    "all_requested_scenarios_executed": false,
+    "complete_portfolio_returns_reported": false,
+    "unchecked_stages": [
+      "per-stock raw field/value validation and qualified pre-09:35 reference",
+      "daily marks for chronological actual holdings",
+      "official execution environment coverage"
+    ],
+    "partial_states_certify_full_coverage": false,
+    "summary_csv_exists": false
+  },
+  {
+    "run": "preflight-v1",
+    "start": "2024-01-02",
+    "end": "2024-04-15",
+    "trading_days": 67,
+    "ready": false,
+    "exit_code": 2,
+    "first_target_count": 956,
+    "saved_nonempty_stockdays": 954,
+    "unknown_zero_l2_targets": 1,
+    "positive_suspended_zero_l2_targets": 1,
+    "pending_initial_raw_stockdays": 0,
+    "issue_kinds": [
+      "zero_l2_target",
+      "corporate_actions"
+    ],
+    "corporate_action_issues": [
+      "dividend/account_action_lifecycle_v2: incomplete natural-date stage coverage [['2024-01-02', '2024-04-15']]"
+    ],
+    "requested_scenarios": 25,
+    "all_requested_scenarios_executed": false,
+    "complete_portfolio_returns_reported": false,
+    "unchecked_stages": [
+      "per-stock raw field/value validation and qualified pre-09:35 reference",
+      "daily marks for chronological actual holdings",
+      "official execution environment coverage"
+    ],
+    "partial_states_certify_full_coverage": false,
+    "summary_csv_exists": false
+  },
+  {
+    "run": "preflight-full-window-v1",
+    "start": "2024-01-02",
+    "end": "2024-08-30",
+    "trading_days": 162,
+    "ready": false,
+    "exit_code": 2,
+    "first_target_count": 956,
+    "saved_nonempty_stockdays": 954,
+    "unknown_zero_l2_targets": 1,
+    "positive_suspended_zero_l2_targets": 1,
+    "pending_initial_raw_stockdays": 0,
+    "issue_kinds": [
+      "zero_l2_target",
+      "corporate_actions"
+    ],
+    "corporate_action_issues": [
+      "dividend/accepted_window: incomplete natural-date stage coverage [['2024-05-01', '2024-08-30']]",
+      "dividend/account_action_lifecycle_v2: incomplete natural-date stage coverage [['2024-01-02', '2024-08-30']]"
+    ],
+    "requested_scenarios": 25,
+    "all_requested_scenarios_executed": false,
+    "complete_portfolio_returns_reported": false,
+    "unchecked_stages": [
+      "per-stock raw field/value validation and qualified pre-09:35 reference",
+      "daily marks for chronological actual holdings",
+      "official execution environment coverage"
+    ],
+    "partial_states_certify_full_coverage": false,
+    "summary_csv_exists": false
+  }
+]
