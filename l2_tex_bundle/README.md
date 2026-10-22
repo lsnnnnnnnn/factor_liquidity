@@ -1,119 +1,58 @@
-# 中文L2执行研究可编辑报告
+# 中文因子流动性报告
 
-**10 月 22 日最新状态：**已按用户采用的“新现金账户、09:35、真实股／份”约定实现正式N20/sample3/H20_equal_G1执行入口，保留2024-01-02—08-30完整162日与原H20相位。源68次目标、139409笔origin/余额、1355日日账和完整pending已实际复核。首日956目标取回3754065条L2，954非空，1项明确停牌、1项689009.SH有成交但无L2；用户确认无替代来源。前三期公司行动账户生命周期覆盖亦缺，三个窗口实际预检均退出2，未生成组合收益。新账户前两三期、全窗口及资金阶梯均未完成，不发布容量结论。2024只称既有策略的执行压力回放。全套379项测试通过；19页报告保留用户前11页文字。详见[最新实际验证状态](data/research_0935/README.md)及[源账核对](data/sample3_targets/README.md)。以下旧日期正文和结果保留。
+[报告 PDF](report.pdf) · [正文源码](main.tex) · [完整 bundle](../dist/factor_liquidity_l2_tex_bundle.zip) · [数据说明](data/README.md)
 
-当前新入口、实际导出/预检、费用核对和最终测试见 `data/research_0935/` 与 `data/sample3_targets/`。旧源固定成交路径的−18.5790%不是新现金参考收益；旧2026年前15只演示也不是正式因子。下面历史版本命令和结果按原日期保留。
+本包仅保留 2026 年 10 月 22 日的最新实验状态。整理前的正文、附录和历史图表见[旧版本](https://github.com/lsnnnnnnnn/factor_liquidity/tree/report-20261022-before-consolidation)。
 
-# 连续账户实验：报告、源码和图表
+## 本版包含什么
 
-10 月 22 日附录位于 `update_20261022.tex`。共享五表已实际读取，普通成交139409行、持仓249358行已恢复并独立逐字段核对，全1355日复权账户重建通过；新结果在 `data/sample3_restoration/`，图7由 `python scripts/make_sample3_restoration.py` 重画。图6仍来自 `data/sample3_update/`，用 `python scripts/make_sample3_update.py` 重画。原用户正文保留，不把2024样本称为样本外。下方10月19/21日文字和测试数为历史记录。
+2026 年执行器实验只展示最新规则下的三个 1 亿元连续账户：参考价全部成交假设、L2 不限参与率、L2 的 10% 参与率。它们采用调试用动量策略，观察窗口为 2026-07-31—09-04，共 26 个交易日。10% 路径收益为 −2.9764%，当日完成率为 89.6872%，较参考假设收益低 1.6746 个百分点。旧规则的 25 场景结果不作为本版结果。
 
-本次294项测试通过。真实共享表恢复、独立金额/持仓/全日估值核对、固定实际成交路径零费复权NAV已运行；按零费重新定量策略、原始可卖账户、正式L2收益对照和资金阶梯未运行。授权引擎目录可复现：
+正式 N20、sample3、H20_equal_G1 已完成共享价格、原成交、持仓、现金净值、目标及完整待执行状态的恢复核对。新的 2024 年实验从现金、零持仓开始，保留原调仓相位，每天 09:35 决策，按真实股／份和未复权价格记账，不融资，费用为零。它不接续原账户旧持仓，也不把原账本固定成交路径的收益当作新账户基线。
 
-```bash
-PYTHONPATH=src .venv/bin/python -m pytest -q
-PYTHONPATH=src .venv/bin/python scripts/inspect_sample3_execution.py --output outputs/sample3-amounts-new
-PYTHONPATH=src .venv/bin/python scripts/audit_sample3_coverage.py \
-  --bundle outputs/sample3-execution-20261022/input/H20_equal_G1 --output outputs/sample3-market-new
-PYTHONPATH=src .venv/bin/python scripts/audit_sample3_auxiliary.py \
-  --bundle outputs/sample3-execution-20261022/input/H20_equal_G1 --output outputs/sample3-auxiliary-new
-PYTHONPATH=src .venv/bin/python scripts/check_l2_turnover_windows.py \
-  --data outputs/sample3-execution-20261022/market-details --output outputs/sample3-turnover-new
-PYTHONPATH=src .venv/bin/python -m factor_liquidity.sample3_ledger \
-  outputs/sample3-execution-20261022/input/H20_equal_G1 \
-  --shared-dir outputs/sample3-shared-20261022/input/sample3 \
-  --tables-output outputs/sample3-restored-new --output outputs/sample3-restored-new.json
-PYTHONPATH=src .venv/bin/python scripts/audit_sample3_restoration.py \
-  --bundle outputs/sample3-execution-20261022/input/H20_equal_G1 \
-  --shared outputs/sample3-shared-20261022/input/sample3 \
-  --ordinary outputs/sample3-shared-20261022/restored-ordinary \
-  --output outputs/sample3-review-new.json
-PYTHONPATH=src .venv/bin/python scripts/reconstruct_sample3_accounts.py \
-  --bundle outputs/sample3-execution-20261022/input/H20_equal_G1 \
-  --shared outputs/sample3-shared-20261022/input/sample3 \
-  --ordinary outputs/sample3-shared-20261022/restored-ordinary --output outputs/sample3-accounts-new
-PYTHONPATH=src .venv/bin/python scripts/compare_sample3_shared_prices.py \
-  --shared outputs/sample3-shared-20261022/input/sample3 \
-  --market outputs/sample3-execution-20261022/market-coverage/whole_day_comparison.csv \
-  --holdings outputs/sample3-shared-20261022/restored-ordinary/holdings.parquet \
-  --output outputs/sample3-price-comparison-new
-```
-
-新输出必须使用新目录或新JSON路径。服务器取数仅用于已授权环境，单并发、每次不超过200行/30秒，凭据留服务器。原始资料不在公开包，缺原始输入时可从派生CSV重画图6/7，不能伪称重跑正式策略。
-
-10 月 21 日附录位于 `update_20261021.tex`；`execution_results_20261021.tex` 由新增公开 CSV 生成。它保留原正文，另外报告固定券单规则对照、重新运行的连续账户和真实因子包仍缺的输入。新包是 2007—2009 年 sample1，不能用旧调试动量充当正式因子回放。新增公开表见 `data/execution_update/README.md`，私人因子载荷、持仓和完整账户不随包发布。
-
-`report.pdf` 是中文报告，`main.tex` 是正文，`results.tex` 的数字由附带 CSV 生成。账户在 2026-07-31 全现金开始，到 09-04 共 26 个交易日，每天估值；8 月 3、10、17、24、31 日调仓，共 5 次。没有调仓也不重置账户。
+2024 年正式回放尚未开始模拟订单或账户。当前仅完成首日真实数据准备及各窗口预检；689009.SH 缺 L2、公司行动账户生命周期覆盖不完整，仍阻止发布完整收益。保存的最新测试记录为 379 项通过。报告不提供 2024 年完成率、资金阶梯或容量结论。
 
 ## 编译、重画与打包
 
+在本目录执行：
+
 ```bash
-make pdf                     # 用已有正文和矢量图编译 PDF
-make figures                 # 用 data/ 重画 PDF/240 dpi PNG，更新 results.tex
-make all                     # 重画并编译
-make bundle                  # 生成 ../dist/factor_liquidity_l2_tex_bundle.zip
+make pdf       # 用随包正文、数字文件和图编译 report.pdf
+make figures   # 从公开派生数据重画两组图并更新 current_results.tex
+make all       # 先重画，再编译
+make bundle    # 重画、编译并生成 ../dist/factor_liquidity_l2_tex_bundle.zip
 ```
 
-只重画新增图与更新附录数字，可运行：
+PDF 编译使用现有 **LuaLaTeX、latexmk、ctex、Fandol**。`make pdf` 不调用 Python 或数据库。macOS 若已安装 TeX，可将 `/Library/TeX/texbin` 加入 PATH。
+
+重画使用现有 **pandas、NumPy、Matplotlib**，不需要新增依赖。可以指定已有引擎环境：
 
 ```bash
-python scripts/make_execution_update.py
-python scripts/make_execution_tables.py
+make figures PYTHON=/path/to/engine/.venv/bin/python
 make pdf
+make bundle PYTHON=/path/to/engine/.venv/bin/python
 ```
 
-使用 Python、Matplotlib、Fandol、LuaLaTeX 和 latexmk，不连接数据库。例如已有引擎环境时可运行 `make all PYTHON=/path/to/engine/.venv/bin/python`。`latexmk`、`lualatex`、`kpsewhich` 需要在 PATH 中，macOS 现有 TeX 位于 `/Library/TeX/texbin`。也可指定画图字体：
+Overleaf 上传 ZIP 中 `l2_tex_bundle` 文件夹内的内容，选择 `main.tex` 为主文件，编译器为 **LuaLaTeX**。`build/` 保存本地编译和绘图缓存，不进入交付 ZIP。
 
-```bash
-python scripts/make_figures.py --font /path/to/chinese-font.otf
-```
+## 文件与结果的对应关系
 
-临时文件在 `build/`，ZIP 不包含缓存、日志和页面预览。Overleaf 的主文件选 `main.tex`，编译器选 **LuaLaTeX**。修改 CSV 后，要一起更新图、`results.tex` 和报告 PDF，避免数字不一致。
+| 文件 | 内容 |
+|---|---|
+| `main.tex` | 当前中文正文 |
+| `current_results.tex` | 从派生数据生成的报告数字 |
+| `figures/01_current_execution.pdf`、`.png` | 最新 2026 年执行账户的图表 |
+| `figures/02_current_targets.pdf`、`.png` | 正式策略的 2024 年目标记录 |
+| `data/execution_summary.csv` | 最新三个 1 亿元账户的汇总 |
+| `data/execution_nav.csv` | 10% 路径和参考账户的 26 日净值 |
+| `data/targets_2024.csv` | 2024 年正式策略目标统计 |
+| `data/source_reconstruction.json` | 原账本与目标恢复核对 |
+| `data/research_protocol.json` | 新现金账户及 09:35 研究规则 |
+| `data/research_status.json` | 真实实验当前状态和未完成项 |
+| `data/first_day_preparation.json` | 首日 L2 数据准备诊断 |
+| `data/corporate_action_review.json` | 公司行动输入及覆盖检查 |
+| `data/test_results.json` | 已运行的引擎测试记录 |
+| `scripts/make_current_report.py` | 读取上述数据，重画当前图并更新数字 |
+| `scripts/build_bundle.py` | 打包报告及公开派生材料 |
 
-## 这次怎样连续运行
-
-股票沿用研究开始前按 2026 年 3 月成交额选出的 30 只深圳 000 代码股票，成交额高、中、低各 10 只。暂用前 21 个官方交易日收盘价计算 20 日未复权动量，前 15 只目标权重各为 1/15，其余为零。每次只读取此前的价格，不用当天或未来收盘价选股。
-
-每档资金的五个账户从同样现金开始，收到相同排名、目标权重和盘前参考价，但按自己的净资产和实际持仓计算买卖股数。前次未成交会影响后续持仓和需求，所以各组之后的订单不相同。这是在比较同一选股规则连续运行的结果，不能再套用上一版固定股数的比较方式。
-
-净资产为现金加股票市值及应收权益，再减借款。本轮完全不考虑费用：买卖交易费、税费、最低费和借款利息全部为零，不主动预留现金；借入本金不算收益。分红、送转股按登记日真实持股计应收，生效、到账和可卖时间分开，不重复计入收益，现金分红全额计入。
-
-普通订单当天没完成就结束，但已成交持仓留下。只有正面停牌证据，或新鲜收盘盘口触及官方方向限价且没有原始对手盘，剩余任务才可跨日；下次调仓先撤旧单，再按实际持股重算。若有跨日活跃订单，当天缺 L2 且没有停牌证据，程序停止，不能把未知缺失当作零成交。没有活跃订单的日子使用官方日线估值即可。
-
-四张图分别看：全期净值和回撤、五次调仓完成多少、收盘持仓距目标多远以及后续需求、不同资金下的全期收益和回撤。所有收益从同一笔初始资金计算，不能用旧版独立单日收益拼接。
-
-## 使用授权本地数据重新运行
-
-完整引擎和原始数据保存在授权本地；公开包只包含重画所需的派生结果。以下命令在授权引擎目录运行，先检查输入，输出使用新的空目录：
-
-```bash
-PYTHONPATH=src MPLCONFIGDIR=.cache/matplotlib .venv/bin/python -m pytest -q
-PYTHONPATH=src .venv/bin/python -m factor_liquidity.l2_continuous \
-  --data data/company_l2_continuous_stage_20261019 --output outputs/my-continuous-check \
-  --start 2026-07-31 --end 2026-09-04 \
-  --rebalance-date 2026-08-03 --rebalance-date 2026-08-10 \
-  --rebalance-date 2026-08-17 --rebalance-date 2026-08-24 \
-  --rebalance-date 2026-08-31 --check-data
-PYTHONPATH=src .venv/bin/python -m factor_liquidity.l2_continuous \
-  --data data/company_l2_continuous_stage_20261019 --output outputs/my-continuous-zero-fee-study \
-  --start 2026-07-31 --end 2026-09-04 \
-  --rebalance-date 2026-08-03 --rebalance-date 2026-08-10 \
-  --rebalance-date 2026-08-17 --rebalance-date 2026-08-24 \
-  --rebalance-date 2026-08-31 --cache-prepared
-```
-
-`--check-data` 核对日期、日线、官方限价和公司行动输入；实际逐日执行时，还要核对跨日任务是否有行情，预检通过不代表未来所有续单需求都已知道。缺少任何必要资料时先补资料，不跳过中间日期继续算收益。
-
-`--cache-prepared` 把本窗口已核对的盘口准备结果暂存内存，供不同资金和成交方法复用，减少重复读取；它不缓存账户状态，也不改变每个账户从头连续运行的过程。
-
-本阶段只覆盖连续五周。原季度窗口因 7/1、7/2 的全池 L2 空缺及 7 月权益证据不足，仍标记未完成。公司行动源声明为公告窗口；所列版本已核对，不把它扩大成所有经济事件都完整无遗漏的证明。归档数据可覆盖的历史限制仍然存在，尚未认证生产数据库在每个历史时点的实际可用性。
-
-上一版单日研究在 Git 历史 `51a539f`，两股小样在 `v2`，旧分钟实验在 `v1`。正式公司因子和指定的 2024 年压力数据尚未接入。原始 L2、逐日价格序列、完整账户、服务器和连接配置、凭据不公开，也不生成哈希或校验和。
-
-## 已完成的核对
-
-本轮在零费用设置下重新运行 25 个连续账户，共 650 条日终估值、3,750 条调仓目标、2,255 笔母单，全部通过账户核对。执行代码为 `8e8ffe5`，158 项引擎测试通过。重画前还检查了每个账户的费用合计和每笔订单费用严格为零，以及元数据中的买卖费率、最低费、融资利率和现金预留均为零，拒绝把旧计费结果带入报告。
-
-独立按逐笔记录重建了全部 25 个账户的现金、债务、持仓、权益和净资产；各账户的目标权重合计为 1，没有主动预留现金。桌面交付副本还在零费用下完整运行 26 个交易日、100 万元的参考、不限参与率和 10% 参与率三个账户，45 张 CSV 解压后及账户核对 JSON 都与正式结果逐字一致。新输出在桌面交付目录的 `outputs/desktop-zero-fee-smoke-20261019`，核对记录为 `review/desktop_reproduction.json`；此前计费的桌面连续实验路径已归档到 `history_with_fees_20261019`。
-
-报告共 6 页，四组图均附 PDF 和 240 dpi PNG，最终页面全部渲染检查。此前计费结果及其核对记录保留在 Git 历史 `563beed`。
+重画脚本不访问数据库，不生成订单，也不重算私有回测。修改派生数据后，应重新生成图、数字和 PDF，保持口径一致。原始行情、逐证券完整账本、账户流水和私有配置不在本包；缺少授权输入时，不能将公开图表重画称为真实策略复现。

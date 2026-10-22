@@ -1,4 +1,4 @@
-signal_date,execution_date,group_count_before_liquidity,liquidity_filtered_count,target_count,target_weight_sum,all_compared_source_counts_match
+﻿signal_date,execution_date,group_count_before_liquidity,liquidity_filtered_count,target_count,target_weight_sum,all_compared_source_counts_match
 2024-01-10,2024-01-11,956,0,956,1.0,True
 2024-02-07,2024-02-08,957,0,957,1.0,True
 2024-03-14,2024-03-15,956,0,956,1.0,True

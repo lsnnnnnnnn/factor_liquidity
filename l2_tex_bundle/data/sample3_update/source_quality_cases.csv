@@ -1,3 +1,0 @@
-case,rows,valid_rows,negative_amount_rows,price_bounds_failures,price_bounds_unavailable,scope
-A,10,5,1,3,0,"source validation only; no planned orders, simulated fills or strategy account"
-B,10,5,1,3,0,"source validation only; no planned orders, simulated fills or strategy account"
