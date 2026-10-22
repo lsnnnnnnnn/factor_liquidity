@@ -12,6 +12,7 @@ figures:
 	$(PYTHON) scripts/make_execution_update.py
 	$(PYTHON) scripts/make_execution_tables.py
 	$(PYTHON) scripts/make_sample3_update.py
+	$(PYTHON) scripts/make_sample3_restoration.py
 
 pdf:
 	mkdir -p "$(TEXMFCACHE)"

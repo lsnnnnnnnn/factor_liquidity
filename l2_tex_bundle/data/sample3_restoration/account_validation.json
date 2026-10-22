@@ -1,0 +1,22 @@
+{
+  "daily_accounts": 1355,
+  "trades_checked": 139409,
+  "source_snapshot_dates": 256,
+  "source_snapshot_rows": 249358,
+  "post_trade_units_exact": true,
+  "snapshot_units_exact": true,
+  "max_cash_difference": 1.0766485126563919e-14,
+  "max_nav_difference": 1.1546319456101628e-14,
+  "max_fee_refund_identity_difference": 4.85722573273506e-17,
+  "initial_cash_normalized": 1.0,
+  "final_nav_with_original_fees": 1.48200361654308,
+  "final_zero_fee_nav_fixed_actual_path": 1.5526003691678347,
+  "total_fees_normalized": 0.07059675262475457,
+  "carried_holding_days": 1349,
+  "maximum_carried_holdings": 33,
+  "carried_marks_equal_their_last_source_observation": true,
+  "raw_share_conversion": false,
+  "raw_sellable_account": false,
+  "benchmark_excess_available": false,
+  "zero_fee_limit": "no target resizing, new stock selection, invented parent order, instruction time or raw-share rounding"
+}

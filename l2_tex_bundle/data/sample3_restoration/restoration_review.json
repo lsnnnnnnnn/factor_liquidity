@@ -1,0 +1,39 @@
+{
+  "trades": 139409,
+  "holdings": 249358,
+  "holding_snapshot_count": 256,
+  "shared_dates": 1376,
+  "shared_security_columns": 5166,
+  "exact_known_trade_fields": true,
+  "original_schema_dtypes_and_index": true,
+  "default_read_dtype_differences": {
+    "trades": {
+      "ts_code": {
+        "default_read": "str",
+        "declared": "object"
+      }
+    },
+    "holdings": {
+      "ts_code": {
+        "default_read": "str",
+        "declared": "object"
+      }
+    }
+  },
+  "exact_holding_event_identity_and_absolute_units": true,
+  "exact_shared_value_checks": {
+    "adjusted_open": 139409,
+    "raw_open": 139409,
+    "adj_factor": 139409,
+    "mark": 249358,
+    "mark_carried": 249358
+  },
+  "max_adjusted_price_relation_difference": 0.0,
+  "max_snapshot_nav_difference": 8.881784197001252e-16,
+  "tiny_positive_holding_rows": 50744,
+  "carried_holding_mark_rows": 1558,
+  "raw_share_conversion_checked": false,
+  "independent_market_price_validation": false,
+  "original_source_modules_executed": false,
+  "original_default_verification_executed": false
+}

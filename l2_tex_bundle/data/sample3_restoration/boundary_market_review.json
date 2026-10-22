@@ -1,0 +1,15 @@
+{
+  "boundary": "2024-01-10",
+  "carried_positions": 14,
+  "carried_value_normalized": 0.013555549999781511,
+  "source_nav_normalized": 1.7232785052591773,
+  "carried_value_share_of_source_nav": 0.007866140010690139,
+  "oldest_source_observation": "2020-09-15",
+  "current_lifecycle_reference_rows": 14,
+  "reference_delist_before_boundary": 14,
+  "boundary_zero_daily_rows": 14,
+  "historical_market_pit_lifecycle_certified": false,
+  "liquidation_or_compensation_rights_verified": false,
+  "zero_valuation_assumed": false,
+  "limitation": "source adjusted book values; current lifecycle reference and absent daily bars do not establish liquidation value or raw sellable balance"
+}
