@@ -1,0 +1,9 @@
+month,actual_trade_stockdays,l2_present,l2_missing,negative_turnover_increment,amount_difference_over_one_yuan,amount_difference_over_1000_yuan,close_difference_over_half_cent
+2024-01,2338,2337,1,0,0,0,0
+2024-02,2567,2566,1,88,1169,88,0
+2024-03,2172,2172,0,0,0,0,0
+2024-04,2201,2200,1,0,0,0,0
+2024-05,2662,2661,1,0,0,0,0
+2024-06,2152,2152,0,43,640,43,2
+2024-07,3146,3146,0,0,0,0,0
+2024-08,3176,3176,0,0,0,0,0

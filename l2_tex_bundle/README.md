@@ -1,5 +1,22 @@
 # 连续账户实验：报告、源码和图表
 
+10 月 22 日附录位于 `update_20261022.tex`，图6来自 `data/sample3_update/`，单独重画运行 `python scripts/make_sample3_update.py`。新sample3与原N20组合汇总匹配，reader源码已收到并静态审阅，原始共享五张宽表/普通导出及实际目标计划仍待补齐。附录区分金额核对、市场存在性、质量问题与尚未完成的正式回放；不把2024样本称为样本外。下方10月19/21日文字和测试数为历史记录。
+
+本次277项测试通过。真实读取及金额现金核对已运行；实际共享表恢复、原零费逐股账户、正式L2收益对照和资金阶梯未运行。授权引擎目录可复现：
+
+```bash
+PYTHONPATH=src .venv/bin/python -m pytest -q
+PYTHONPATH=src .venv/bin/python scripts/inspect_sample3_execution.py --output outputs/sample3-amounts-new
+PYTHONPATH=src .venv/bin/python scripts/audit_sample3_coverage.py \
+  --bundle outputs/sample3-execution-20261022/input/H20_equal_G1 --output outputs/sample3-market-new
+PYTHONPATH=src .venv/bin/python scripts/audit_sample3_auxiliary.py \
+  --bundle outputs/sample3-execution-20261022/input/H20_equal_G1 --output outputs/sample3-auxiliary-new
+PYTHONPATH=src .venv/bin/python scripts/check_l2_turnover_windows.py \
+  --data outputs/sample3-execution-20261022/market-details --output outputs/sample3-turnover-new
+```
+
+新输出必须使用新目录。服务器取数仅用于已授权环境，单并发、每次不超过200行/30秒，凭据留服务器。原始资料不在公开包，缺原始输入时只能重画图6，不能伪称重跑正式策略。
+
 10 月 21 日附录位于 `update_20261021.tex`；`execution_results_20261021.tex` 由新增公开 CSV 生成。它保留原正文，另外报告固定券单规则对照、重新运行的连续账户和真实因子包仍缺的输入。新包是 2007—2009 年 sample1，不能用旧调试动量充当正式因子回放。新增公开表见 `data/execution_update/README.md`，私人因子载荷、持仓和完整账户不随包发布。
 
 `report.pdf` 是中文报告，`main.tex` 是正文，`results.tex` 的数字由附带 CSV 生成。账户在 2026-07-31 全现金开始，到 09-04 共 26 个交易日，每天估值；8 月 3、10、17、24、31 日调仓，共 5 次。没有调仓也不重置账户。

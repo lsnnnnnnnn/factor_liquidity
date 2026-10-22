@@ -1,0 +1,15 @@
+{
+  "test_command": "PYTHONPATH=src .venv/bin/python -m pytest -q",
+  "tests_passed": 277,
+  "test_seconds": 6.31,
+  "real_payload_read": true,
+  "normalized_cash_reconciled": true,
+  "source_reader_static_reviewed": true,
+  "source_modules_executed": false,
+  "original_shared_tables_received": false,
+  "real_ordinary_restoration_run": false,
+  "source_raw_share_account_rebuilt": false,
+  "formal_l2_replay_run": false,
+  "capital_ladder_run": false,
+  "source_quality_real_windows": 2
+}

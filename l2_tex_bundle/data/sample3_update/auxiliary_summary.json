@@ -1,0 +1,18 @@
+{
+  "actual_trade_stockdays": 20414,
+  "query_scope": "actual executed-security dates, not complete planned-order/holding universe",
+  "corporate_action_scope": "candidate first-three executed securities, effective 2024-01-01 through 2024-04-15; no complete entitlement certification",
+  "sparse_state_absence_means_normal": false,
+  "complete_account_market_coverage": false,
+  "limits_rows": 20414,
+  "limits_covered_keys": 20414,
+  "st_rows": 160,
+  "st_covered_keys": 160,
+  "suspension_rows": 0,
+  "suspension_covered_keys": 0,
+  "coverage_rows": 64,
+  "action_leg_rows": 13,
+  "calendar_daily_dates_match_both_exchanges": true,
+  "official_sessions_2024": 162,
+  "cdr_special_coverage": "one pinned cash announcement; explicitly does not claim whole-month coverage"
+}
