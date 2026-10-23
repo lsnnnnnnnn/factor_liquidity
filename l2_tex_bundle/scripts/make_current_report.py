@@ -5,6 +5,8 @@ import pandas as pd
 
 PUBLIC_TABLES = ('daily_nav', 'window_summary', 'new_target_progress', 'data_exposure_daily', 'unfilled_reasons')
 
+PUBLIC_METADATA_KEYS = ('rule_version', 'factor', 'cash_once', 'fees', 'financing', 'reference_max_age_seconds', 'max_source_gap_seconds', 'execution_windows', 'timezone', 'initial_date', 'full_calendar_end', 'fixed_critical_event_excluded_security_count')
+
 def _truth(series):
     return series.map(lambda value: value is True or str(value).lower() in {"true", "1"})
 
@@ -37,14 +39,8 @@ def export_public_aggregates(stats, directory):
     return outputs
 
 
-def refresh_report(output):
-    """Refresh the shareable Chinese bundle from actual account aggregates."""
-    import subprocess
-    import matplotlib
-    matplotlib.use("Agg")
-    from matplotlib import font_manager
-    import matplotlib.pyplot as plt
-
+def collect_report_data(output):
+    """Export the public report inputs without importing plotting or TeX tools."""
     output = Path(output)
     public_source = (output/"data/window_summary.csv").exists()
     sources = [output/"data"] if public_source else sorted(path.parent for path in output.rglob("statistics/window_summary.csv"))
@@ -61,21 +57,35 @@ def refresh_report(output):
         tables[name] = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
     summary = compare_accounts([tables["window_summary"]])
     completed = summary.loc[_truth(summary.completed)].copy()
-    if completed.empty:
-        raise ValueError("no requested real-account window is complete yet")
     bundle = output if public_source else output/"report_bundle"
     export_public_aggregates(tables, bundle/"data")
     summary.to_csv(bundle/"data/account_comparison.csv", index=False)
     metadata_file = bundle/"data/research_metadata.json"
     if not public_source and (output/"run_config.json").exists():
         private_config = json.loads((output/"run_config.json").read_text())
-        metadata = {key: private_config[key] for key in ("rule_version", "factor", "cash_once", "fees", "financing",
-            "reference_max_age_seconds", "max_source_gap_seconds", "execution_windows", "timezone",
-            "initial_date", "full_calendar_end") if key in private_config}
+        metadata = {key: private_config[key] for key in PUBLIC_METADATA_KEYS if key in private_config}
         metadata["fixed_critical_event_excluded_security_count"] = len(private_config.get("critical_event_exclusions", []))
-        metadata_file.write_text(json.dumps(metadata, ensure_ascii=False, indent=2)+"\n")
     else:
-        metadata = json.loads(metadata_file.read_text()) if metadata_file.exists() else {}
+        existing_metadata = json.loads(metadata_file.read_text()) if metadata_file.exists() else {}
+        metadata = {key: existing_metadata[key] for key in PUBLIC_METADATA_KEYS if key in existing_metadata}
+    metadata_file.write_text(json.dumps(metadata, ensure_ascii=False, indent=2)+"\n")
+    return dict(bundle=bundle, sources=sources, tables=tables, summary=summary,
+        completed=completed, metadata=metadata)
+
+
+def refresh_report(output):
+    """Refresh the shareable Chinese bundle from actual account aggregates."""
+    collected = collect_report_data(output)
+    bundle, sources, tables, summary, completed, metadata = (collected[key] for key in
+        ("bundle", "sources", "tables", "summary", "completed", "metadata"))
+    if completed.empty:
+        raise ValueError("no requested real-account window is complete yet")
+    import subprocess
+    import matplotlib
+    matplotlib.use("Agg")
+    from matplotlib import font_manager
+    import matplotlib.pyplot as plt
+
     figures = bundle/"figures"
     figures.mkdir(exist_ok=True)
     font = subprocess.check_output(["kpsewhich", "FandolHei-Regular.otf"], text=True).strip()
@@ -409,7 +419,7 @@ def refresh_report(output):
 资金（万元） & 原正目标数 & 取整后正数 & 首日建仓数 & 首日现金（\%） & 期末现金（\%）\\\midrule
 """+"\n".join(structure_rows)+r"""
 \bottomrule\end{tabular}
-\caption{10\%路径首次开仓的数量结构与现金比例。原目标数、合法正数量和实际建仓数分别列出，避免把小额资金的数量单位限制当成盘口不足。}
+\caption{10\%路径首次开仓的数量结构与现金比例。原目标数、取整后正数量和实际建仓数分别列出；正数量仍须满足最小申报要求，数量单位限制不等于盘口不足。}
 \end{table}
 """
     source += r"""
@@ -430,8 +440,9 @@ def refresh_report(output):
     script_directory.mkdir(exist_ok=True)
     standalone = "from pathlib import Path\nimport json\nimport numpy as np\nimport pandas as pd\n\n"
     standalone += "PUBLIC_TABLES = "+repr(PUBLIC_TABLES)+"\n\n"
+    standalone += "PUBLIC_METADATA_KEYS = "+repr(PUBLIC_METADATA_KEYS)+"\n\n"
     standalone += "\n\n".join(inspect.getsource(function) for function in
-        (_truth, compare_accounts, export_public_aggregates, refresh_report))
+        (_truth, compare_accounts, export_public_aggregates, collect_report_data, refresh_report))
     standalone += '\n\nif __name__ == "__main__":\n    print(refresh_report(Path(__file__).resolve().parents[1]))\n'
     (script_directory/"make_current_report.py").write_text(standalone, encoding="utf-8")
     (bundle/"README.md").write_text("# 2024年真实因子执行研究\n\n"
