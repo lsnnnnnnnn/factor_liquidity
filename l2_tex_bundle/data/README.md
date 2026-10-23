@@ -1,19 +1,13 @@
-# 当前报告的公开派生数据
+# 本轮公开派生统计
 
-这里只保留新版正文直接使用或用于核对当前状态的数据。旧报告的图源和过程记录保留在 Git 标签 `report-20261022-before-consolidation`，不与当前包混排。
+daily_nav.csv：每日现金、实际股份市值、权益应收、净值及含初始现金起点的回撤。
 
-|文件|用途|
-|---|---|
-|execution_summary.csv|最新规则下三个已实际运行的2026年、1亿元连续账户；不含旧规则行|
-|execution_nav.csv|最新10%参与率及参考账户的完整26日净值；不含旧规则曲线|
-|targets_2024.csv|正式N20/G1八次新目标的日期、筛选和数量汇总|
-|source_reconstruction.json|当前完整原账、目标及pending恢复核对结果|
-|research_protocol.json|新现金、09:35、真实股/份研究约定|
-|research_status.json|当前2024正式组合运行状态及尚未验收项|
-|first_day_preparation.json|首日956目标的实际原始行情准备与质量诊断；0订单、0账户模拟|
-|corporate_action_review.json|前三期账户范围9项事件及生命周期覆盖缺项|
-|test_results.json|已有379项测试通过记录；不代表真实策略收益已运行|
+window_summary.csv、account_comparison.csv：实际完成窗口的收益、回撤、同资金新参考差值、新目标日固定计划完成率、实际成交滑点、明确完成任务的交易分钟及未完成数量，以及各资金首次原正目标数、取整后正数量、实际建仓数和现金比例。completed=false不代表完整窗口结果。
 
-`make figures` 检查收益与初末资产等式、26日净值终点和八次目标汇总，然后重画两张当前图并生成 `current_results.tex`。不连接数据库、不重跑回测、不执行哈希或校验和流程。
+new_target_progress.csv：各新目标日09:35固定父计划的30/60分钟、当日进度。每天重试不重复累加为独立目标；无计划分母时完成率留空。股与份的未成数量分列，不混加。
 
-2026年调试动量与2024年正式因子不是同一套策略。原复权账本的固定路径退费收益不是新现金账户基线。完整原始L2、证券级目标与持仓、私有凭据不在此包中。
+data_exposure_daily.csv：原权重中缺参考、停牌、共同关键权益清单、数量限制，以及日终才知道的整日缺L2、状态未知、陈旧估值和未到账权益。日报暴露不可跨日相加冒充新增需求。
+
+unfilled_reasons.csv：固定顺序下的互斥主原因。daily_parent_attempt_unfilled以剩余数量乘本父参考价计；daily_unquantified_target_exposure是数量未定时的理论权重金额，两者分开，不能拼作同一个完成率分母。
+
+上述数据均为汇总，不包含原始L2、逐证券目标、完整流水或连接配置。

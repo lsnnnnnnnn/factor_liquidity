@@ -1,8 +1,0 @@
-{
-  "tests_passed": 379,
-  "seconds": 9.58,
-  "exit_code": 0,
-  "command": "PYTHONPATH=src .venv/bin/python -m pytest -q",
-  "real_formal_portfolio_backtest": false,
-  "unit_and_integration_synthetic_inputs_are_not_real_backtest": true
-}
