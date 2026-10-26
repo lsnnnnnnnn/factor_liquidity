@@ -13,5 +13,5 @@
   "timezone": "Asia/Shanghai",
   "initial_date": "2024-01-02",
   "full_calendar_end": "2024-08-30",
-  "fixed_critical_event_excluded_security_count": 62
+  "fixed_critical_event_excluded_security_count": 215
 }
