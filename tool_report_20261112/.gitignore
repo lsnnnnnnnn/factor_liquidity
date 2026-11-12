@@ -1,0 +1,12 @@
+__pycache__/
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.parquet
+**/private/
+**/portable/
+**/inputs/
+**/checkpoints/
+**/.runtime/

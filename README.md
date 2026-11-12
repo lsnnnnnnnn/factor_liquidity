@@ -1,3 +1,13 @@
+# 因子流动性容量工具
+
+[工具与现行设置](tool_report_20261112/README.md) · [49档历史基线中文PDF](tool_report_20261112/historical_baseline_49/main.pdf) · [公开LaTeX bundle](tool_report_20261112/historical_baseline_49_tex_bundle.zip)
+
+现行工具按全部原计划在原日100%完成评估容量，支持独立的对称1个百分点扫板基线与可配置额外冲击成本。各份报告明确列出实际金融规则、已测账户和适用范围；49档历史报告保留原30秒参考价规则，不代表新参考价或冲击情景结果。
+
+以下保留此前批次的实验说明。
+
+---
+
 # 因子流动性实验
 
 [中文报告](l2_tex_bundle/report.pdf) · [可编辑正文](l2_tex_bundle/main.tex) · [LaTeX bundle](dist/factor_liquidity_l2_tex_bundle.zip) · [编译与重画](l2_tex_bundle/README.md) · [汇总数据说明](l2_tex_bundle/data/README.md) · [历史版本](#版本与分支)

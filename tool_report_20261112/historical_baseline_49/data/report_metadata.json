@@ -1,0 +1,220 @@
+{
+  "generated_at_utc": "2026-11-12T05:06:31.504441+00:00",
+  "data_kind": "company_historical_replay",
+  "criterion": "all-plan-same-day-exact-quantity",
+  "search": {
+    "capital_start_cny": 10000000,
+    "exploration_ceiling_cny": 10000000000,
+    "refine_step_below_1yi_cny": 1000000,
+    "refine_step_below_10yi_cny": 10000000,
+    "refine_step_to_ceiling_cny": 100000000
+  },
+  "factor_variants": [
+    "N20",
+    "N61",
+    "N121",
+    "N241",
+    "N481"
+  ],
+  "factor_id": "F000001",
+  "factor_name": "F000001收益率因子",
+  "fees": 0,
+  "factor_inputs": {},
+  "rule_version": "g1-0935-event-updates-20261027-v1",
+  "reference_price_rule": "max_age",
+  "reference_max_age_seconds": 30,
+  "start": "2024-01-02",
+  "end": "2024-08-30",
+  "scenarios": {
+    "regular": {
+      "participation_rate": 0.1,
+      "daily_turnover_cap": 0.1
+    },
+    "sweep": {
+      "regular_participation_rate": 0.1,
+      "regular_daily_turnover_cap": 0.1,
+      "sweep_limit_gap_pp": 1.0,
+      "post_trigger_participation": 1.0,
+      "pricing": "official_directional_limit"
+    }
+  },
+  "observed_trials": 49,
+  "private_security_data_included": false,
+  "turnover_case": {
+    "available": true,
+    "alias": "证券3",
+    "date": "2024-04-16",
+    "factor": "N61",
+    "scenario": "regular",
+    "capital": 10000000.0,
+    "day_over_adv20": 0.03622341805692924,
+    "original_selection_rule_verified": false
+  },
+  "intraday_cases": [
+    {
+      "case_id": "intraday_1",
+      "alias": "案例1",
+      "factor": "N481",
+      "scenario": "regular",
+      "capital": 1000000000.0,
+      "date": "2024-04-16",
+      "side": "sell",
+      "plan_quantity": 234300.0,
+      "filled_quantity": 0.0,
+      "remaining_quantity": 234300.0,
+      "trigger_at": null,
+      "extra_impact_cost": null
+    },
+    {
+      "case_id": "intraday_2",
+      "alias": "案例2",
+      "factor": "N481",
+      "scenario": "sweep",
+      "capital": 1000000000.0,
+      "date": "2024-04-16",
+      "side": "sell",
+      "plan_quantity": 234300.0,
+      "filled_quantity": 101700.0,
+      "remaining_quantity": 132600.0,
+      "trigger_at": "2024-04-16 09:35:00+08:00",
+      "extra_impact_cost": null
+    },
+    {
+      "case_id": "intraday_3",
+      "alias": "案例3",
+      "factor": "N61",
+      "scenario": "regular",
+      "capital": 1000000000.0,
+      "date": "2024-06-17",
+      "side": "sell",
+      "plan_quantity": 1145099.0,
+      "filled_quantity": 0.0,
+      "remaining_quantity": 1145099.0,
+      "trigger_at": null,
+      "extra_impact_cost": null
+    }
+  ],
+  "completion_time_basis": "original_positive_plans_same_day_trading_minutes_excluding_lunch; unfinished_and_unknown_retained",
+  "market_impact": null,
+  "special_case_independent_plans": 472662,
+  "special_case_counting": "overlapping_flags_per_account_original_plan_only_not_causal_not_capacity_exemptions",
+  "source_issue_counting": "deduplicated_independent_plan_flags_not_daily_retry_or_event_counts",
+  "progress_scope": "saved_account_status_not_live_process_verification",
+  "running_jobs_in_saved_status": 1,
+  "progress": [
+    {
+      "factor": "N20",
+      "scenario": "regular",
+      "capital": 3000000000.0,
+      "saved_status": "waiting_for_cache",
+      "completed_day": "2024-04-15",
+      "completed_trading_days": 67,
+      "total_trading_days": 162,
+      "observed_trials": 5,
+      "recorded_at_utc": "2026-11-11T09:32:13.502681+00:00"
+    },
+    {
+      "factor": "N20",
+      "scenario": "sweep",
+      "capital": 1000000000.0,
+      "saved_status": "running",
+      "completed_day": "2024-08-30",
+      "completed_trading_days": 162,
+      "total_trading_days": 162,
+      "observed_trials": 4,
+      "recorded_at_utc": "2026-11-11T07:48:16.335017+00:00"
+    },
+    {
+      "factor": "N61",
+      "scenario": "regular",
+      "capital": 3000000000.0,
+      "saved_status": "waiting_for_cache",
+      "completed_day": "2024-01-10",
+      "completed_trading_days": 7,
+      "total_trading_days": 162,
+      "observed_trials": 5,
+      "recorded_at_utc": "2026-11-11T09:53:01.489303+00:00"
+    },
+    {
+      "factor": "N61",
+      "scenario": "sweep",
+      "capital": 3000000000.0,
+      "saved_status": "waiting_for_cache",
+      "completed_day": "2024-01-10",
+      "completed_trading_days": 7,
+      "total_trading_days": 162,
+      "observed_trials": 5,
+      "recorded_at_utc": "2026-11-11T10:13:01.683547+00:00"
+    },
+    {
+      "factor": "N121",
+      "scenario": "regular",
+      "capital": 3000000000.0,
+      "saved_status": "waiting_for_cache",
+      "completed_day": "2024-02-07",
+      "completed_trading_days": 27,
+      "total_trading_days": 162,
+      "observed_trials": 5,
+      "recorded_at_utc": "2026-11-11T09:34:23.733567+00:00"
+    },
+    {
+      "factor": "N121",
+      "scenario": "sweep",
+      "capital": 3000000000.0,
+      "saved_status": "waiting_for_cache",
+      "completed_day": "2024-02-07",
+      "completed_trading_days": 27,
+      "total_trading_days": 162,
+      "observed_trials": 5,
+      "recorded_at_utc": "2026-11-11T09:33:18.608152+00:00"
+    },
+    {
+      "factor": "N241",
+      "scenario": "regular",
+      "capital": 3000000000.0,
+      "saved_status": "waiting_for_cache",
+      "completed_day": "2024-04-19",
+      "completed_trading_days": 71,
+      "total_trading_days": 162,
+      "observed_trials": 5,
+      "recorded_at_utc": "2026-11-11T09:36:33.928247+00:00"
+    },
+    {
+      "factor": "N241",
+      "scenario": "sweep",
+      "capital": 3000000000.0,
+      "saved_status": "waiting_for_cache",
+      "completed_day": "2024-04-19",
+      "completed_trading_days": 71,
+      "total_trading_days": 162,
+      "observed_trials": 5,
+      "recorded_at_utc": "2026-11-11T09:35:28.822929+00:00"
+    },
+    {
+      "factor": "N481",
+      "scenario": "regular",
+      "capital": 3000000000.0,
+      "saved_status": "waiting_for_cache",
+      "completed_day": "2024-04-15",
+      "completed_trading_days": 67,
+      "total_trading_days": 162,
+      "observed_trials": 5,
+      "recorded_at_utc": "2026-11-11T09:40:56.301203+00:00"
+    },
+    {
+      "factor": "N481",
+      "scenario": "sweep",
+      "capital": 3000000000.0,
+      "saved_status": "waiting_for_cache",
+      "completed_day": "2024-04-15",
+      "completed_trading_days": 67,
+      "total_trading_days": 162,
+      "observed_trials": 5,
+      "recorded_at_utc": "2026-11-11T09:39:51.232018+00:00"
+    }
+  ],
+  "adv20_history_calendar_supplied": true,
+  "financial_accounts_recomputed": false,
+  "source_results_generated_at_utc": null,
+  "pdf_status": "compiled"
+}
