@@ -1,0 +1,5 @@
+factor,scenario,maximum_tested_pass_cny,nearest_higher_failure_cny,unknown_capitals_cny,tested_count,ceiling_cny,ceiling_passed,nonmonotonic_observed
+N20,regular,,,,1,10000000.0,False,False
+N20,sweep,,,,1,10000000.0,False,False
+N20,regular_impact,,,,1,10000000.0,False,False
+N20,sweep_impact,,,,1,10000000.0,False,False

@@ -1,8 +1,10 @@
 # 因子流动性容量工具
 
-[工具与现行设置](tool_report_20261112/README.md) · [49档历史基线中文PDF](tool_report_20261112/historical_baseline_49/main.pdf) · [公开LaTeX bundle](tool_report_20261112/historical_baseline_49_tex_bundle.zip)
+[v3代表账户中文PDF](tool_report_20261112/representative_v3/main.pdf) · [公开LaTeX bundle](tool_report_20261112/representative_v3_tex_bundle.zip) · [工具与现行设置](tool_report_20261112/README.md)
 
-现行工具按全部原计划在原日100%完成评估容量，支持独立的对称1个百分点扫板基线与可配置额外冲击成本。各份报告明确列出实际金融规则、已测账户和适用范围；49档历史报告保留原30秒参考价规则，不代表新参考价或冲击情景结果。
+2026年11月12日的代表版覆盖真实N20、1,000万元、四个执行情景，全部完成162日并通过独立核账，均未达到全部原计划当日100%。新参考价按已观测事件状态判断；5基点额外冲击是未经真实订单校准的参数情景，在成交前联动现金与数量。报告列出收益、成本、完成时间和三类真实日内案例。完整五N资金搜索另行发布，不用代表账户推断未测资金的容量。
+
+[49档历史基线PDF](tool_report_20261112/historical_baseline_49/main.pdf) · [历史LaTeX bundle](tool_report_20261112/historical_baseline_49_tex_bundle.zip)。历史报告保留原30秒参考价规则，与新参考价和冲击情景分别列示。
 
 以下保留此前批次的实验说明。
 

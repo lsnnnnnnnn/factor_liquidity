@@ -1,0 +1,158 @@
+{
+  "generated_at_utc": "2026-11-12T08:00:48.836087+00:00",
+  "data_kind": "company_historical_replay",
+  "criterion": "all-plan-same-day-exact-quantity",
+  "search": {
+    "capital_start_cny": 10000000,
+    "exploration_ceiling_cny": 10000000,
+    "refine_step_below_1yi_cny": 1000000,
+    "refine_step_below_10yi_cny": 10000000,
+    "refine_step_to_ceiling_cny": 100000000
+  },
+  "factor_variants": [
+    "N20"
+  ],
+  "factor_id": "F000001",
+  "factor_name": "F000001收益率因子（N20代表账户）",
+  "fees": 0,
+  "factor_inputs": {
+    "N20": {
+      "N": 20,
+      "H": 20,
+      "source_format": "processed_inputs",
+      "selection": {
+        "kind": "group",
+        "group": 1
+      }
+    }
+  },
+  "rule_version": "g1-0935-event-state-impact-20261112-v3",
+  "reference_price_rule": "event_state_same_am_v1",
+  "reference_max_age_seconds": 30,
+  "start": "2024-01-02",
+  "end": "2024-08-30",
+  "scenarios": {
+    "regular": {
+      "participation_rate": 0.1,
+      "daily_turnover_cap": 0.1
+    },
+    "sweep": {
+      "regular_participation_rate": 0.1,
+      "regular_daily_turnover_cap": 0.1,
+      "sweep_limit_gap_pp": 1.0,
+      "post_trigger_participation": 1.0,
+      "pricing": "official_directional_limit"
+    },
+    "regular_impact": {
+      "execution_scenario": "regular",
+      "participation_rate": 0.1,
+      "daily_turnover_cap": 0.1,
+      "market_impact": {
+        "model": "incremental_sqrt_turnover",
+        "version": "economic_sqrt_v1",
+        "bps_at_10pct": 5.0,
+        "parameter_source": "scenario_assumption",
+        "accounting": "separate_cash_cost"
+      },
+      "accounting": "separate_cash_cost_not_exchange_execution_price",
+      "post_trigger_participation": null
+    },
+    "sweep_impact": {
+      "execution_scenario": "sweep",
+      "participation_rate": 0.1,
+      "daily_turnover_cap": 0.1,
+      "market_impact": {
+        "model": "incremental_sqrt_turnover",
+        "version": "economic_sqrt_v1",
+        "bps_at_10pct": 5.0,
+        "parameter_source": "scenario_assumption",
+        "accounting": "separate_cash_cost"
+      },
+      "accounting": "separate_cash_cost_not_exchange_execution_price",
+      "post_trigger_participation": 1.0
+    }
+  },
+  "observed_trials": 4,
+  "private_security_data_included": false,
+  "turnover_case": {
+    "available": true,
+    "alias": "证券3",
+    "date": "2024-05-17",
+    "factor": "N20",
+    "scenario": "sweep",
+    "capital": 10000000.0,
+    "day_over_adv20": 0.6844718808318517,
+    "original_selection_rule_verified": false
+  },
+  "intraday_cases": [
+    {
+      "case_id": "intraday_1",
+      "alias": "案例1",
+      "factor": "N20",
+      "scenario": "regular_impact",
+      "capital": 10000000.0,
+      "date": "2024-01-11",
+      "side": "buy",
+      "plan_quantity": 2800.0,
+      "filled_quantity": 2800.0,
+      "remaining_quantity": 0.0,
+      "trigger_at": null,
+      "selection_basis": "normal_completion",
+      "sweep_filled_quantity": 0.0,
+      "extra_impact_cost": 0.7367899403474433
+    },
+    {
+      "case_id": "intraday_2",
+      "alias": "案例2",
+      "factor": "N20",
+      "scenario": "sweep_impact",
+      "capital": 10000000.0,
+      "date": "2024-01-11",
+      "side": "buy",
+      "plan_quantity": 500.0,
+      "filled_quantity": 500.0,
+      "remaining_quantity": 0.0,
+      "trigger_at": "2024-01-11 09:35:00+08:00",
+      "selection_basis": "sweep_execution",
+      "sweep_filled_quantity": 500.0,
+      "extra_impact_cost": 0.07843814476919127
+    },
+    {
+      "case_id": "intraday_3",
+      "alias": "案例3",
+      "factor": "N20",
+      "scenario": "regular_impact",
+      "capital": 10000000.0,
+      "date": "2024-01-11",
+      "side": "buy",
+      "plan_quantity": 403.0,
+      "filled_quantity": 205.0,
+      "remaining_quantity": 198.0,
+      "trigger_at": null,
+      "selection_basis": "unfinished",
+      "sweep_filled_quantity": 0.0,
+      "extra_impact_cost": 0.8118152647568885,
+      "quantity_residual_after_split": true,
+      "submission_minimum": 200.0,
+      "submission_rule_evidence": "saved_child_submission_rule"
+    }
+  ],
+  "completion_time_basis": "original_positive_plans_same_day_trading_minutes_excluding_lunch; unfinished_and_unknown_retained",
+  "market_impact": {
+    "model": "incremental_sqrt_turnover",
+    "version": "economic_sqrt_v1",
+    "bps_at_10pct": 5.0,
+    "parameter_source": "scenario_assumption",
+    "accounting": "separate_cash_cost"
+  },
+  "special_case_independent_plans": 49611,
+  "special_case_counting": "overlapping_flags_per_account_original_plan_only_not_causal_not_capacity_exemptions",
+  "source_issue_counting": "deduplicated_independent_plan_flags_not_daily_retry_or_event_counts",
+  "progress_scope": "saved_account_status_not_live_process_verification",
+  "running_jobs_in_saved_status": 0,
+  "progress": [],
+  "adv20_history_calendar_supplied": true,
+  "financial_accounts_recomputed": false,
+  "source_results_generated_at_utc": null,
+  "pdf_status": "compiled"
+}
