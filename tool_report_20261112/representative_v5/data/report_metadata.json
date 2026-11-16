@@ -1,0 +1,238 @@
+{
+  "generated_at_utc": "2026-11-16T05:56:04.233165+00:00",
+  "data_kind": "company_historical_replay",
+  "criterion": "legal-plan-same-day-exact-100pct-20261116-v1",
+  "search": {
+    "capital_start_cny": 10000000.0,
+    "exploration_ceiling_cny": 10000000.0,
+    "refine_step_below_1yi_cny": 1000000,
+    "refine_step_below_10yi_cny": 10000000,
+    "refine_step_to_ceiling_cny": 100000000
+  },
+  "factor_variants": [
+    "N20"
+  ],
+  "factor_id": "F000001",
+  "factor_name": "F000001收益率因子（N20合法订单代表账户）",
+  "fees": 0,
+  "factor_inputs": {
+    "N20": {
+      "N": 20,
+      "H": 20,
+      "source_format": "processed_inputs",
+      "selection": {
+        "kind": "group",
+        "group": 1
+      }
+    }
+  },
+  "rule_version": "g1-0935-legal-plan-impact-20261116-v5",
+  "reference_price_rule": "event_state_same_am_v1",
+  "reference_max_age_seconds": 30,
+  "start": "2024-01-02",
+  "end": "2024-08-30",
+  "scenarios": {
+    "regular": {
+      "participation_rate": 0.1,
+      "daily_turnover_cap": 0.1
+    },
+    "sweep": {
+      "regular_participation_rate": 0.1,
+      "regular_daily_turnover_cap": 0.1,
+      "sweep_limit_gap_pp": 1.0,
+      "post_trigger_participation": 1.0,
+      "pricing": "official_directional_limit"
+    },
+    "regular_impact": {
+      "execution_scenario": "regular",
+      "participation_rate": 0.1,
+      "daily_turnover_cap": 0.1,
+      "market_impact": {
+        "model": "incremental_sqrt_turnover",
+        "version": "economic_sqrt_v1",
+        "bps_at_10pct": 5.0,
+        "parameter_source": "scenario_assumption",
+        "accounting": "separate_cash_cost"
+      },
+      "accounting": "separate_cash_cost_not_exchange_execution_price",
+      "post_trigger_participation": null
+    },
+    "sweep_impact": {
+      "execution_scenario": "sweep",
+      "participation_rate": 0.1,
+      "daily_turnover_cap": 0.1,
+      "market_impact": {
+        "model": "incremental_sqrt_turnover",
+        "version": "economic_sqrt_v1",
+        "bps_at_10pct": 5.0,
+        "parameter_source": "scenario_assumption",
+        "accounting": "separate_cash_cost"
+      },
+      "accounting": "separate_cash_cost_not_exchange_execution_price",
+      "post_trigger_participation": 1.0
+    }
+  },
+  "observed_trials": 4,
+  "private_security_data_included": false,
+  "turnover_case": {
+    "available": true,
+    "alias": "证券1",
+    "date": "2024-06-17",
+    "factor": "N20",
+    "scenario": "regular",
+    "capital": 10000000.0,
+    "day_over_adv20": 0.7961703051959594,
+    "original_selection_rule_verified": false
+  },
+  "intraday_cases": [
+    {
+      "case_id": "intraday_1",
+      "alias": "案例1",
+      "factor": "N20",
+      "scenario": "regular_impact",
+      "capital": 10000000.0,
+      "date": "2024-01-11",
+      "side": "buy",
+      "plan_quantity": 2800.0,
+      "filled_quantity": 2800.0,
+      "remaining_quantity": 0.0,
+      "trigger_at": null,
+      "selection_basis": "normal_completion",
+      "sweep_filled_quantity": 0.0,
+      "extra_impact_cost": 0.7367899403474433
+    },
+    {
+      "case_id": "intraday_2",
+      "alias": "案例2",
+      "factor": "N20",
+      "scenario": "sweep_impact",
+      "capital": 10000000.0,
+      "date": "2024-01-11",
+      "side": "buy",
+      "plan_quantity": 500.0,
+      "filled_quantity": 500.0,
+      "remaining_quantity": 0.0,
+      "trigger_at": "2024-01-11 09:35:00+08:00",
+      "selection_basis": "sweep_execution",
+      "sweep_filled_quantity": 500.0,
+      "extra_impact_cost": 0.07843814476919127
+    },
+    {
+      "case_id": "intraday_3",
+      "alias": "案例3",
+      "factor": "N20",
+      "scenario": "regular_impact",
+      "capital": 10000000.0,
+      "date": "2024-06-17",
+      "side": "sell",
+      "plan_quantity": 2900.0,
+      "filled_quantity": 0.0,
+      "remaining_quantity": 2900.0,
+      "trigger_at": null,
+      "selection_basis": "unfinished",
+      "sweep_filled_quantity": 0.0,
+      "extra_impact_cost": 0.0
+    }
+  ],
+  "completion_time_basis": "original_positive_plans_same_day_trading_minutes_excluding_lunch; unfinished_and_unknown_retained",
+  "market_impact": {
+    "model": "incremental_sqrt_turnover",
+    "version": "economic_sqrt_v1",
+    "bps_at_10pct": 5.0,
+    "parameter_source": "scenario_assumption",
+    "accounting": "separate_cash_cost"
+  },
+  "special_case_independent_plans": 48307,
+  "special_case_counting": "overlapping_flags_per_account_original_plan_only_not_causal_not_capacity_exemptions",
+  "source_issue_counting": "deduplicated_independent_plan_flags_not_daily_retry_or_event_counts",
+  "progress_scope": "saved_account_status_not_live_process_verification",
+  "running_jobs_in_saved_status": 0,
+  "progress": [],
+  "adv20_history_calendar_supplied": true,
+  "research_plan_policy": "legal_net_demand_floor_v1",
+  "research_execution_policy": "lot_preserving_quote_cash_v1",
+  "plan_rounding_summary": [
+    {
+      "factor": "N20",
+      "scenario": "regular",
+      "capital": 10000000.0,
+      "plan_episode_count": 12646,
+      "quantified_plan_episode_count": 12077,
+      "positive_legal_plan_count": 11508,
+      "unknown_plan_episode_count": 569,
+      "plan_rounding_reference_cny": 6397606.802495293,
+      "legal_zero_plan_count": 569,
+      "legal_zero_raw_reference_cny": 2419477.1368986545,
+      "unestablished_positive_target_count": 191,
+      "unestablished_positive_target_reference_cny": 1897084.438247737
+    },
+    {
+      "factor": "N20",
+      "scenario": "regular_impact",
+      "capital": 10000000.0,
+      "plan_episode_count": 12646,
+      "quantified_plan_episode_count": 12077,
+      "positive_legal_plan_count": 11507,
+      "unknown_plan_episode_count": 569,
+      "plan_rounding_reference_cny": 6408937.8913638815,
+      "legal_zero_plan_count": 570,
+      "legal_zero_raw_reference_cny": 2418130.3371036444,
+      "unestablished_positive_target_count": 191,
+      "unestablished_positive_target_reference_cny": 1896264.2041461375
+    },
+    {
+      "factor": "N20",
+      "scenario": "sweep",
+      "capital": 10000000.0,
+      "plan_episode_count": 12646,
+      "quantified_plan_episode_count": 12077,
+      "positive_legal_plan_count": 11509,
+      "unknown_plan_episode_count": 569,
+      "plan_rounding_reference_cny": 6403174.980881293,
+      "legal_zero_plan_count": 568,
+      "legal_zero_raw_reference_cny": 2420213.547365212,
+      "unestablished_positive_target_count": 191,
+      "unestablished_positive_target_reference_cny": 1897381.8502720809
+    },
+    {
+      "factor": "N20",
+      "scenario": "sweep_impact",
+      "capital": 10000000.0,
+      "plan_episode_count": 12646,
+      "quantified_plan_episode_count": 12077,
+      "positive_legal_plan_count": 11507,
+      "unknown_plan_episode_count": 569,
+      "plan_rounding_reference_cny": 6395685.3718477655,
+      "legal_zero_plan_count": 570,
+      "legal_zero_raw_reference_cny": 2419591.2770899013,
+      "unestablished_positive_target_count": 191,
+      "unestablished_positive_target_reference_cny": 1896868.5026133237
+    }
+  ],
+  "target_weight_coverage_certified": false,
+  "completion_scope": "positive_ex_ante_legal_orders_not_equal_weight_target_coverage",
+  "plan_rounding_counting": "first_plan_episode_only_not_completed_rows_or_retries",
+  "financial_accounts_recomputed": false,
+  "source_results_generated_at_utc": "2026-11-16T05:22:04.024009+00:00",
+  "pdf_status": "compiled",
+  "source_git_commit": "7928a07509216c5d6d0b14f5b6a791c7b28c6ff1",
+  "financial_source_git_commit": "a60de44f9ea7052d523f092f9e8c458ffb735240",
+  "assessment_source_git_commit": "bc9d7aa5b79463ed362004b0f31adb66a9ebd1ca",
+  "financial_source": {
+    "kind": "saved_continuous_accounts",
+    "factor": "N20",
+    "capital_cny": 10000000,
+    "scenarios": [
+      "regular",
+      "regular_impact",
+      "sweep",
+      "sweep_impact"
+    ],
+    "trading_days": 162,
+    "saved_independent_audit_passed": true
+  },
+  "financial_audit_recomputed": false,
+  "assessment_recomputed": false,
+  "assessment_method": "reuse_saved_strict_evaluations",
+  "capital_search_executed": false
+}

@@ -1,0 +1,5 @@
+factor,scenario,capital,positive_original_plans,unquantified_original_targets,unfinished_original_plans,timing_known_plans,completed_within_30m,completed_within_60m,reference_completion_30m,reference_completion_60m,median_completed_minutes,p90_completed_minutes
+N20,regular,10000000.0,11508,569,26,11508,11476,11480,0.9979213706688682,0.9981068348010762,0.3,1.15
+N20,regular_impact,10000000.0,11507,569,26,11507,11475,11479,0.997920625533539,0.9981062353764023,0.3,1.15
+N20,sweep,10000000.0,11509,569,15,11509,11491,11493,0.9990618625080371,0.9991240196257402,0.3,1.15
+N20,sweep_impact,10000000.0,11507,569,15,11507,11489,11491,0.9990624330601571,0.9991246035804849,0.3,1.15

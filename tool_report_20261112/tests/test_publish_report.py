@@ -79,6 +79,39 @@ class PublicReportTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"exact 100%"):
                 publisher.publish(source,root/"public","historical_baseline",dry_run=True)
 
+    def test_legal_plan_publication_requires_distinct_scope_and_deviation_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); source=self.source(root)
+            meta=source/"data/report_metadata.json"
+            data=json.loads(meta.read_text())
+            data.update(criterion=publisher.LEGAL_PLAN_CRITERION,
+                research_plan_policy="legal_net_demand_floor_v1",
+                rule_version="g1-0935-legal-plan-impact-20261116-v5")
+            meta.write_text(json.dumps(data))
+            with self.assertRaisesRegex(FileNotFoundError,"target-deviation"):
+                publisher.publish(source,root/"public","representative",dry_run=True)
+            summary=source/"data/plan_rounding_summary.csv"
+            summary.write_text("factor,scenario,capital,legal_zero_plan_count,plan_rounding_reference_cny\nN20,sweep,10000000,27,281414.12\n")
+            receipt=publisher.publish(source,root/"public","representative",dry_run=True)
+            self.assertIn("data/plan_rounding_summary.csv",receipt["files"])
+            summary.write_text("factor,instrument\nN20,private-security\n")
+            with self.assertRaisesRegex(ValueError,"non-public columns"):
+                publisher.publish(source,root/"public","representative",dry_run=True)
+            data['criterion']="all-plan-same-day-exact-100pct-20261109-v1"
+            meta.write_text(json.dumps(data))
+            with self.assertRaisesRegex(ValueError,"historical original-plan"):
+                publisher.publish(source,root/"public","representative",dry_run=True)
+
+    def test_legal_plan_publication_rejects_legacy_version(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); source=self.source(root)
+            meta=source/"data/report_metadata.json";data=json.loads(meta.read_text())
+            data.update(criterion=publisher.LEGAL_PLAN_CRITERION,
+                research_plan_policy="legal_net_demand_floor_v1")
+            meta.write_text(json.dumps(data))
+            with self.assertRaisesRegex(ValueError,"v5 financial rule"):
+                publisher.publish(source,root/"public","representative",dry_run=True)
+
 
 if __name__ == "__main__":
     unittest.main()

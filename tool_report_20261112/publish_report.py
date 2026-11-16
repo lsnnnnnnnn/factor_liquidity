@@ -23,6 +23,7 @@ PUBLIC_COLUMNS = {
     "completion_time_summary": "factor scenario capital positive_original_plans unquantified_original_targets unfinished_original_plans timing_known_plans completed_within_30m completed_within_60m reference_completion_30m reference_completion_60m median_completed_minutes p90_completed_minutes",
     "turnover_case": "date market_amount_cny is_trade_date",
     "intraday_cases": "case_id kind timestamp background_price quantity cumulative_filled remaining_quantity",
+    "plan_rounding_summary": "factor scenario capital plan_episode_count quantified_plan_episode_count positive_legal_plan_count unknown_plan_episode_count plan_rounding_reference_cny legal_zero_plan_count legal_zero_raw_reference_cny unestablished_positive_target_count unestablished_positive_target_reference_cny",
 }
 PUBLIC_FIGURES = ("capital_return", "capital_completion", "capital_impact", "turnover_case",
                   "intraday_1", "intraday_2", "intraday_3")
@@ -30,6 +31,7 @@ PRIVATE_KEYS = {"instrument", "order_id", "child_id", "account", "evaluation_out
                 "credentials", "broker_socket", "shared_cache", "inputs", "private", "portable"}
 ROLES = ("historical_baseline", "representative", "capacity_study")
 STRICT_CRITERIA = {"all-plan-same-day-exact-quantity", "all-plan-same-day-exact-100pct-20261109-v1"}
+LEGAL_PLAN_CRITERION = "legal-plan-same-day-exact-100pct-20261116-v1"
 
 
 def check_metadata(value):
@@ -53,8 +55,16 @@ def select_public_files(source):
         raise ValueError("real-report publication requires company_historical_replay metadata")
     if metadata.get("pdf_status") != "compiled" or metadata.get("private_security_data_included") is not False:
         raise ValueError("report must declare a compiled PDF and public-only data")
-    if metadata.get("criterion") not in STRICT_CRITERIA:
-        raise ValueError("this publication uses original-plan same-day exact 100%")
+    if metadata.get("criterion") == LEGAL_PLAN_CRITERION:
+        if (metadata.get("research_plan_policy") != "legal_net_demand_floor_v1" or
+                metadata.get("rule_version") != "g1-0935-legal-plan-impact-20261116-v5"):
+            raise ValueError("legal-plan publication requires its explicit plan policy and v5 financial rule")
+        if not (source/"data/plan_rounding_summary.csv").is_file():
+            raise FileNotFoundError("legal-plan publication requires public target-deviation evidence")
+    elif metadata.get("criterion") not in STRICT_CRITERIA:
+        raise ValueError("publication requires an explicit same-day exact 100% quantity criterion")
+    elif metadata.get("research_plan_policy") == "legal_net_demand_floor_v1":
+        raise ValueError("legal plans must not be labelled as the historical original-plan criterion")
     if metadata.get("reference_price_rule") not in {"max_age", "event_state_same_am_v1"}:
         raise ValueError("save the actual reference-price rule before publication")
     if not metadata.get("rule_version"):
