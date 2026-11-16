@@ -112,6 +112,56 @@ class PublicReportTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"v5 financial rule"):
                 publisher.publish(source,root/"public","representative",dry_run=True)
 
+    def test_v6_sweep_publication_requires_explicit_matching_policy_and_scope(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); source=self.source(root)
+            path=source/"data/report_metadata.json"
+            metadata=json.loads(path.read_text())
+            metadata.update(criterion=publisher.LEGAL_PLAN_CRITERION,
+                research_plan_policy="legal_net_demand_floor_v1",
+                research_execution_policy="lot_preserving_quote_cash_v1",
+                rule_version=publisher.EXTENDED_SWEEP_RULE,
+                sweep_band_policy=publisher.EXTENDED_SWEEP_BAND_POLICY,
+                sweep_limit_bands_pct=[5,10,20], scenarios={scene:dict(
+                    sweep_band_policy=publisher.EXTENDED_SWEEP_BAND_POLICY,
+                    sweep_limit_bands_pct=[5,10,20]) for scene in ("sweep", "sweep_impact")})
+            (source/"data/plan_rounding_summary.csv").write_text("factor,scenario,capital,legal_zero_plan_count\nN20,sweep,10000000,27\n")
+            path.write_text(json.dumps(metadata))
+            receipt=publisher.publish(source,root/"public","representative",dry_run=True)
+            self.assertEqual(receipt["sweep_band_policy"],publisher.EXTENDED_SWEEP_BAND_POLICY)
+            self.assertEqual(receipt["sweep_limit_bands_pct"],[5,10,20])
+            self.assertNotIn("data/fills.csv",receipt["files"])
+            for changed in ({"sweep_band_policy":None}, {"sweep_limit_bands_pct":[10,20]},
+                    {"rule_version":publisher.LEGAL_PLAN_RULE}, {"research_execution_policy":None},
+                    {"criterion":"all-plan-same-day-exact-quantity"},
+                    {"scenarios":{"sweep":{"sweep_limit_bands_pct":[10,20]}}}):
+                with self.subTest(changed=changed):
+                    path.write_text(json.dumps(metadata|changed))
+                    with self.assertRaises(ValueError):
+                        publisher.publish(source,root/"public","representative",dry_run=True)
+            self.assertFalse((root/"public").exists())
+
+
+    def test_v7_policy_and_public_exception_summary_are_explicit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); source=self.source(root)
+            path=source/'data/report_metadata.json'
+            meta=json.loads(path.read_text())
+            meta.update(criterion=publisher.LEGAL_PLAN_CRITERION, rule_version=publisher.EXCEPTION_RIGHTS_RULE,
+                research_plan_policy='legal_net_demand_floor_v1', research_execution_policy='lot_preserving_quote_cash_v1',
+                sweep_band_policy=publisher.EXTENDED_SWEEP_BAND_POLICY, sweep_limit_bands_pct=[5,10,20],
+                research_expiry_policy='ordinary_day_end_exception_resume_v1',
+                corporate_action_policy='record_holdings_integer_or_unknown_v1')
+            path.write_text(json.dumps(meta))
+            (source/'data/plan_rounding_summary.csv').write_text('factor,legal_zero_plan_count\nN20,1\n')
+            (source/'data/exception_summary.csv').write_text('factor,scenario,capital,event,event_cn,timing,plan_count,event_record_count\nN20,sweep,10000000,exception_completed,延期完成,after_original_day,1,1\n')
+            result=publisher.publish(source,root/'new','representative',dry_run=True)
+            self.assertIn('data/exception_summary.csv',result['files'])
+            for change in ({'corporate_action_policy':None}, {'rule_version':publisher.EXTENDED_SWEEP_RULE}):
+                path.write_text(json.dumps(meta|change))
+                with self.assertRaises(ValueError):
+                    publisher.publish(source,root/'new','representative',dry_run=True)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -16,7 +16,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 
 PUBLIC_COLUMNS = {
-    "trial_summary": "factor scenario capital verdict full_window_completed audit_passed return_pct minimum_order_completion worst_day_reference_completion planned_order_count unfinished_order_count unknown_target_count book_cost_cny sweep_price_cost_cny extra_impact_cost_cny fee_cny impact_cost_pct_initial impact_model impact_version impact_bps_at_10pct impact_parameter_source",
+    "trial_summary": "factor scenario capital verdict full_window_completed audit_passed return_pct minimum_order_completion worst_day_reference_completion planned_order_count unfinished_order_count unknown_target_count book_cost_cny sweep_price_cost_cny extra_impact_cost_cny fee_cny impact_cost_pct_initial impact_model impact_version impact_bps_at_10pct impact_parameter_source valuation_certified",
     "capacity_summary": "factor scenario maximum_tested_pass_cny nearest_higher_failure_cny unknown_capitals_cny tested_count ceiling_cny ceiling_passed nonmonotonic_observed",
     "special_cases_summary": "factor scenario capital category category_cn independent_plan_count unfinished_plan_count unknown_plan_count security_count security_day_count planned_reference_notional unfilled_reference_notional unknown_plan_quantity_count unknown_unfilled_notional_count evidence_scope",
     "run_progress": "factor scenario capital saved_status completed_day completed_trading_days total_trading_days observed_trials recorded_at_utc",
@@ -24,6 +24,7 @@ PUBLIC_COLUMNS = {
     "turnover_case": "date market_amount_cny is_trade_date",
     "intraday_cases": "case_id kind timestamp background_price quantity cumulative_filled remaining_quantity",
     "plan_rounding_summary": "factor scenario capital plan_episode_count quantified_plan_episode_count positive_legal_plan_count unknown_plan_episode_count plan_rounding_reference_cny legal_zero_plan_count legal_zero_raw_reference_cny unestablished_positive_target_count unestablished_positive_target_reference_cny",
+    "exception_summary": "factor scenario capital event event_cn timing plan_count event_record_count",
 }
 PUBLIC_FIGURES = ("capital_return", "capital_completion", "capital_impact", "turnover_case",
                   "intraday_1", "intraday_2", "intraday_3")
@@ -32,6 +33,11 @@ PRIVATE_KEYS = {"instrument", "order_id", "child_id", "account", "evaluation_out
 ROLES = ("historical_baseline", "representative", "capacity_study")
 STRICT_CRITERIA = {"all-plan-same-day-exact-quantity", "all-plan-same-day-exact-100pct-20261109-v1"}
 LEGAL_PLAN_CRITERION = "legal-plan-same-day-exact-100pct-20261116-v1"
+BASELINE_SWEEP_BAND_POLICY = "baseline_10_20_v1"
+EXTENDED_SWEEP_BAND_POLICY = "extended_5_10_20_v1"
+LEGAL_PLAN_RULE = "g1-0935-legal-plan-impact-20261116-v5"
+EXTENDED_SWEEP_RULE = "g1-0935-legal-plan-sweep5-impact-20261116-v6"
+EXCEPTION_RIGHTS_RULE = "g1-0935-exception-integer-rights-impact-20261116-v7"
 
 
 def check_metadata(value):
@@ -55,16 +61,39 @@ def select_public_files(source):
         raise ValueError("real-report publication requires company_historical_replay metadata")
     if metadata.get("pdf_status") != "compiled" or metadata.get("private_security_data_included") is not False:
         raise ValueError("report must declare a compiled PDF and public-only data")
+    band_policy = metadata.get("sweep_band_policy") or BASELINE_SWEEP_BAND_POLICY
+    if band_policy not in {BASELINE_SWEEP_BAND_POLICY, EXTENDED_SWEEP_BAND_POLICY}:
+        raise ValueError("unknown sweep band policy")
+    extended_sweep = band_policy == EXTENDED_SWEEP_BAND_POLICY
+    v7 = metadata.get('rule_version') == EXCEPTION_RIGHTS_RULE
+    if not v7 and (metadata.get('research_expiry_policy') not in {None, 'persistent_target_v1'} or
+                   metadata.get('corporate_action_policy') not in {None, 'legacy_common_exclusion_v1'}):
+        raise ValueError('new financial policies cannot relabel historical v5/v6 accounts')
+    if v7 and (not extended_sweep or
+            metadata.get('research_expiry_policy') != 'ordinary_day_end_exception_resume_v1' or
+            metadata.get('corporate_action_policy') != 'record_holdings_integer_or_unknown_v1'):
+        raise ValueError('v7 publication requires the approved expiry and record-holdings policies')
     if metadata.get("criterion") == LEGAL_PLAN_CRITERION:
         if (metadata.get("research_plan_policy") != "legal_net_demand_floor_v1" or
-                metadata.get("rule_version") != "g1-0935-legal-plan-impact-20261116-v5"):
-            raise ValueError("legal-plan publication requires its explicit plan policy and v5 financial rule")
+                metadata.get("rule_version") != (EXCEPTION_RIGHTS_RULE if v7 else EXTENDED_SWEEP_RULE if extended_sweep else LEGAL_PLAN_RULE)):
+            raise ValueError("legal-plan publication requires its explicit plan policy and v5 financial rule or explicit v6 sweep-band rule")
+        if extended_sweep:
+            if (metadata.get("research_execution_policy") != "lot_preserving_quote_cash_v1" or
+                    metadata.get("sweep_limit_bands_pct") != [5, 10, 20]):
+                raise ValueError("v6 sweep publication requires explicit 5/10/20 scope and execution policy")
+            for scenario, settings in metadata.get("scenarios", {}).items():
+                if scenario in {"sweep", "sweep_impact"} and (
+                        settings.get("sweep_band_policy") != EXTENDED_SWEEP_BAND_POLICY or
+                        settings.get("sweep_limit_bands_pct") != [5, 10, 20]):
+                    raise ValueError("v6 sweep scenario scope differs from report policy")
         if not (source/"data/plan_rounding_summary.csv").is_file():
             raise FileNotFoundError("legal-plan publication requires public target-deviation evidence")
     elif metadata.get("criterion") not in STRICT_CRITERIA:
         raise ValueError("publication requires an explicit same-day exact 100% quantity criterion")
     elif metadata.get("research_plan_policy") == "legal_net_demand_floor_v1":
         raise ValueError("legal plans must not be labelled as the historical original-plan criterion")
+    if (extended_sweep or metadata.get("rule_version") == EXTENDED_SWEEP_RULE) and metadata.get("criterion") != LEGAL_PLAN_CRITERION:
+        raise ValueError("extended sweep requires the legal-plan criterion")
     if metadata.get("reference_price_rule") not in {"max_age", "event_state_same_am_v1"}:
         raise ValueError("save the actual reference-price rule before publication")
     if not metadata.get("rule_version"):
@@ -109,6 +138,11 @@ def publish(source, destination, role, *, dry_run=False):
         "observed_trials": metadata.get("observed_trials"), "financial_accounts_recomputed": False,
         "historical_results_are_new_capacity": False if role == "historical_baseline" else None,
         "files": [str(path) for path in selected]}
+    if metadata.get("sweep_band_policy") == EXTENDED_SWEEP_BAND_POLICY:
+        receipt.update(sweep_band_policy=EXTENDED_SWEEP_BAND_POLICY, sweep_limit_bands_pct=[5, 10, 20])
+    for key in ('research_expiry_policy', 'corporate_action_policy', 'report_layout_version'):
+        if key in metadata:
+            receipt[key] = metadata[key]
     if dry_run:
         return receipt
     destination.mkdir(parents=True)

@@ -1,0 +1,3 @@
+factor,scenario,capital,verdict,full_window_completed,audit_passed,return_pct,minimum_order_completion,worst_day_reference_completion,planned_order_count,unfinished_order_count,unknown_target_count,book_cost_cny,sweep_price_cost_cny,extra_impact_cost_cny,fee_cny,impact_cost_pct_initial,impact_model,impact_version,impact_bps_at_10pct,impact_parameter_source,valuation_certified
+N20,sweep,10000000.0,unknown,True,True,-8.68908276549989,1.0,1.0,11506,0,556,,,0.0,0.0,0.0,,,,,True
+N20,sweep_impact,10000000.0,unknown,True,True,-8.767972141979484,1.0,1.0,11505,0,556,111966.415,677.5000000000041,7575.717248036382,0.0,0.07575717248036383,incremental_sqrt_turnover,economic_sqrt_v1,5.0,scenario_assumption,True

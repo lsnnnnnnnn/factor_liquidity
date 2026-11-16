@@ -1,0 +1,3 @@
+factor,scenario,capital,plan_episode_count,quantified_plan_episode_count,positive_legal_plan_count,unknown_plan_episode_count,plan_rounding_reference_cny,legal_zero_plan_count,legal_zero_raw_reference_cny,unestablished_positive_target_count,unestablished_positive_target_reference_cny
+N20,sweep,10000000.0,12630,12074,11506,556,6407244.289152335,568,2422619.592285262,191,1898035.699898975
+N20,sweep_impact,10000000.0,12630,12074,11505,556,6399980.225787757,569,2421162.772404832,191,1897516.6569096004
